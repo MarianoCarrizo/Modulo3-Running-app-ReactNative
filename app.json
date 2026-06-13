@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Alamutt Running",
+    "slug": "alamutt-running",
+    "scheme": "alamutt-running",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1B3E"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.aplicacionesmoviles.alamutt",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Alamutt Running needs your location to track your runs.",
+        "NSMotionUsageDescription": "Alamutt Running uses motion data to count your steps.",
+        "NSSpeechRecognitionUsageDescription": "Alamutt Running uses speech for voice alerts."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E91E63",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.aplicacionesmoviles.alamutt",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACTIVITY_RECOGNITION"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Alamutt Running needs your location to track your runs."
+        }
+      ],
+      "expo-image-picker",
+      "expo-web-browser"
+    ]
+  }
+}
