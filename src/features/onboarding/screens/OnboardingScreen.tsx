@@ -4,15 +4,18 @@ import {
   ActivityIndicator, KeyboardAvoidingView, Platform,
   ScrollView, Image,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { updateUser } from '../../../core/services/user.service';
+import { uploadProfileImage } from '../../../core/services/cloudinary.service';
 import { useAuthStore } from '../../../core/store/auth.store';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
 
 const TOTAL_STEPS = 3;
 
 export default function OnboardingScreen() {
+  const insets = useSafeAreaInsets();
   const { user, setUser } = useAuthStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -47,7 +50,7 @@ export default function OnboardingScreen() {
 
   const handlePickPhoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
+      mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -61,12 +64,18 @@ export default function OnboardingScreen() {
     setError('');
     setLoading(true);
     try {
+      // Upload to Cloudinary if user picked a local file
+      let finalPhotoUrl = photoUri ?? '';
+      if (photoUri && !photoUri.startsWith('http')) {
+        finalPhotoUrl = await uploadProfileImage(photoUri);
+      }
+
       await updateUser(user!.uid, {
         name: name.trim(),
         bio: bio.trim(),
         weightKg: parseFloat(weight),
         heightCm: parseFloat(height),
-        photoUrl: photoUri ?? '',
+        photoUrl: finalPhotoUrl,
         onboardingCompleted: true,
       });
       setUser({
@@ -75,7 +84,7 @@ export default function OnboardingScreen() {
         bio: bio.trim(),
         weightKg: parseFloat(weight),
         heightCm: parseFloat(height),
-        photoUrl: photoUri ?? '',
+        photoUrl: finalPhotoUrl,
         onboardingCompleted: true,
       });
     } catch (e: unknown) {
@@ -86,8 +95,12 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={[styles.container, { paddingTop: spacing.lg + insets.top, paddingBottom: spacing.xl + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+      >
 
         {/* Header */}
         <Text style={styles.title}>CONFIGURA TU PERFIL</Text>
@@ -233,7 +246,7 @@ const floatStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  container: { flexGrow: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.xxl, paddingBottom: spacing.xl },
+  container: { flexGrow: 1, paddingHorizontal: spacing.lg },
   title: {
     fontSize: fontSizes.xl,
     fontWeight: '900',

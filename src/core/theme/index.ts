@@ -42,3 +42,12 @@ export const radii = {
   xl: 24,
   full: 9999,
 };
+
+export const typography = {
+  sectionLabel:  { color: '#E8336D', fontSize: 16, fontWeight: '700' as const },
+  itemTitle:     { color: '#FFFFFF', fontSize: 16, fontWeight: '700' as const },
+  body:          { color: '#FFFFFF', fontSize: 16 },
+  caption:       { color: '#A0B0CC', fontSize: 13 },
+  muted:         { color: '#6B7FA3', fontSize: 13 },
+  label:         { color: '#FFFFFF', fontSize: 13, fontWeight: '600' as const },
+};

@@ -13,6 +13,10 @@ export interface User {
   points?: number;
   bestPace?: number;
   onboardingCompleted: boolean;
+  activeChallenges?: Record<string, number>;
+  challengeWeekId?: string;
+  challengeProgress?: number;
+  completedChallenges?: string[];
 }
 
 export interface Run {
