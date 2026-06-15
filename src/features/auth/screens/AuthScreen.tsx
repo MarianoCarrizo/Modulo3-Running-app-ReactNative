@@ -4,6 +4,7 @@ import {
   ImageBackground, ActivityIndicator, KeyboardAvoidingView,
   Platform, ScrollView, Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
@@ -17,8 +18,7 @@ const { height } = Dimensions.get('window');
 const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
-// Isolated component so the Google hook never runs inside Expo Go.
-// Hooks cannot be called conditionally, but a component can be conditionally rendered.
+// Isolated component so the Google hook never runs inside Expo Go (it can't!!!!! only on prod builds!!!!)
 function GoogleAuthHandler({ triggerRef, onStart, onDone, onError }: {
   triggerRef: React.MutableRefObject<(() => void) | null>;
   onStart: () => void;
@@ -62,6 +62,7 @@ const QUOTE = '"Tus piernas no están cansadas,\ntu mente te miente."';
 type AuthView = 'landing' | 'login' | 'register';
 
 export default function AuthScreen() {
+  const insets = useSafeAreaInsets();
   const [view, setView] = useState<AuthView>('landing');
   const [imageIndex, setImageIndex] = useState(0);
   const [email, setEmail] = useState('');
@@ -123,8 +124,11 @@ export default function AuthScreen() {
         />
       )}
       <View style={styles.overlay}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView
+            contentContainerStyle={[styles.scroll, { paddingBottom: spacing.xl + insets.bottom }]}
+            keyboardShouldPersistTaps="handled"
+          >
 
             {/* Header */}
             <View style={styles.header}>

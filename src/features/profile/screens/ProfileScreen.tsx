@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, Image, Alert,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../../../core/store/auth.store';
@@ -20,6 +22,8 @@ export default function ProfileScreen() {
   const [bio, setBio] = useState('');
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
+
+  const insets = useSafeAreaInsets();
 
   if (!user) return null;
 
@@ -45,8 +49,8 @@ export default function ProfileScreen() {
         const url = await uploadProfileImage(uri);
         await updateUser(user.uid, { photoUrl: url });
         setUser({ ...user, photoUrl: url });
-      } catch {
-        Alert.alert('Error', 'No se pudo subir la foto. Intentá de nuevo.');
+      } catch (e) {
+        Alert.alert('Error', e instanceof Error ? e.message : 'No se pudo subir la foto.');
       } finally {
         setUploadingPhoto(false);
       }
@@ -72,7 +76,8 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: spacing.xxl + insets.bottom }]}>
       <TouchableOpacity
         style={styles.avatarWrap}
         onPress={editing ? handlePickPhoto : undefined}
@@ -179,11 +184,12 @@ export default function ProfileScreen() {
         </>
       )}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root:    { flex: 1, backgroundColor: colors.background },
+  root:    { flex: 1, backgroundColor: colors.background, },
   content: { alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.xxl },
 
   avatarWrap: { marginBottom: spacing.lg },
