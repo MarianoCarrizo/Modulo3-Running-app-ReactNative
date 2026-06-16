@@ -1,0 +1,45 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "back": "Volver",
+    "logout": "Cerrar sesión"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "loginWithGoogle": "Continuar con Google",
+    "email": "Correo",
+    "password": "Contraseña",
+    "noAccount": "¿No tenés cuenta?",
+    "register": "Registrarse"
+  },
+  "run": {
+    "start": "Iniciar carrera",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "finish": "Finalizar",
+    "distance": "Distancia",
+    "pace": "Ritmo",
+    "calories": "Calorías",
+    "steps": "Pasos",
+    "time": "Tiempo",
+    "goalReached": "¡Objetivo alcanzado! Excelente trabajo.",
+    "keepScreenOpen": "Mantené esta pantalla abierta durante la carrera"
+  },
+  "history": {
+    "title": "Historial de carreras",
+    "noRuns": "Aún no hay carreras. ¡Salí a correr!"
+  },
+  "settings": {
+    "title": "Configuración",
+    "units": "Sistema de unidades",
+    "metric": "Métrico (km)",
+    "imperial": "Imperial (mi)",
+    "voiceAlerts": "Alertas de voz",
+    "countdown": "Duración del conteo",
+    "goalDistance": "Distancia objetivo",
+    "language": "Idioma"
+  }
+}

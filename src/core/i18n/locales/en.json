@@ -1,0 +1,45 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Log In",
+    "loginWithGoogle": "Continue with Google",
+    "email": "Email",
+    "password": "Password",
+    "noAccount": "Don't have an account?",
+    "register": "Register"
+  },
+  "run": {
+    "start": "Start Run",
+    "pause": "Pause",
+    "resume": "Resume",
+    "finish": "Finish",
+    "distance": "Distance",
+    "pace": "Pace",
+    "calories": "Calories",
+    "steps": "Steps",
+    "time": "Time",
+    "goalReached": "Goal reached! Excellent work.",
+    "keepScreenOpen": "Keep this screen open during your run"
+  },
+  "history": {
+    "title": "Run History",
+    "noRuns": "No runs yet. Go for a run!"
+  },
+  "settings": {
+    "title": "Settings",
+    "units": "Unit System",
+    "metric": "Metric (km)",
+    "imperial": "Imperial (mi)",
+    "voiceAlerts": "Voice Alerts",
+    "countdown": "Countdown Duration",
+    "goalDistance": "Goal Distance",
+    "language": "Language"
+  }
+}
