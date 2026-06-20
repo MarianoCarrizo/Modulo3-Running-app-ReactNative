@@ -28,6 +28,26 @@ export interface Run {
   calories: number;
   steps: number;
   date: number;
+  points: number;
 }
 
 export type UnitSystem = 'Metric' | 'Imperial';
+
+export type RunState = 'idle' | 'countdown' | 'running' | 'paused';
+
+export interface RunConfig {
+  unitSystem: 'metric' | 'imperial';
+  voiceAlerts: boolean;
+  alertFrequencyKm: number;
+  countdown: number;
+}
+
+export interface RunCheckpoint {
+  userId: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  pace: number;
+  calories: number;
+  steps: number;
+  updatedAt: number;
+}

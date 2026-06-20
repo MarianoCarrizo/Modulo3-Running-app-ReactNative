@@ -5,41 +5,106 @@
     "save": "Save",
     "cancel": "Cancel",
     "back": "Back",
-    "logout": "Logout"
+    "logout": "Logout",
+    "close": "Close",
+    "done": "Done",
+    "or": "or"
   },
   "auth": {
     "login": "Log In",
     "loginWithGoogle": "Continue with Google",
     "email": "Email",
     "password": "Password",
+    "confirmPassword": "Confirm password",
     "noAccount": "Don't have an account?",
-    "register": "Register"
+    "register": "Register",
+    "joinClub": "Join the club",
+    "enterClub": "Enter the club",
+    "registerMe": "Sign up",
+    "goBack": "Go back",
+    "quote": "\"Your legs aren't tired,\nyour mind is lying to you.\"",
+    "fillAllFields": "Please fill in all fields.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 6 characters.",
+    "errorInvalidCredential": "Incorrect email or password.",
+    "errorEmailInUse": "This email is already registered.",
+    "errorInvalidEmail": "The email is not valid.",
+    "errorGeneric": "An error occurred. Please try again.",
+    "noToken": "Could not get Google token.",
+    "googleError": "Google authentication failed. Please try again."
   },
   "run": {
+    "begin": "START",
     "start": "Start Run",
     "pause": "Pause",
     "resume": "Resume",
     "finish": "Finish",
+    "go": "GO!",
     "distance": "Distance",
     "pace": "Pace",
     "calories": "Calories",
     "steps": "Steps",
     "time": "Time",
     "goalReached": "Goal reached! Excellent work.",
-    "keepScreenOpen": "Keep this screen open during your run"
+    "keepScreenOpen": "Keep this screen open during your run",
+    "gpsLost": "GPS signal lost",
+    "paused": "Paused",
+    "gpsSearching": "Searching for GPS signal...",
+    "gpsSearchingSub": "Make sure you're in an open area",
+    "setGoal": "Set a goal",
+    "goal": "Goal: {{value}} {{unit}}",
+    "goalDistance": "Goal distance",
+    "noGoal": "No goal"
+  },
+  "runDetail": {
+    "title": "Run Detail",
+    "notFound": "Run not found."
   },
   "history": {
     "title": "Run History",
-    "noRuns": "No runs yet. Go for a run!"
+    "noRuns": "No runs recorded yet.",
+    "noRunsSub": "Complete your first run to see it here!"
   },
   "settings": {
     "title": "Settings",
+    "general": "General",
+    "language": "Idioma / Language",
+    "training": "Training",
     "units": "Unit System",
     "metric": "Metric (km)",
     "imperial": "Imperial (mi)",
     "voiceAlerts": "Voice Alerts",
-    "countdown": "Countdown Duration",
-    "goalDistance": "Goal Distance",
-    "language": "Language"
+    "frequency": "Frequency: every {{value}} {{unit}}",
+    "countdown": "Countdown",
+    "goalDistance": "Goal Distance"
+  },
+  "challenges": {
+    "points": "points",
+    "totalPoints": "Total points",
+    "weeklyReset": "Challenges reset every week · {{week}}",
+    "active": "Active challenges",
+    "available": "New challenges",
+    "completed": "Completed",
+    "reward": "Reward: {{points}} points",
+    "join": "Challenge",
+    "week": "Week",
+    "progressText": "{{current}} km of {{target}} km",
+    "completedLabel": "{{km}} km Runner — {{year}} Week {{week}}",
+    "errorJoin": "Could not join the challenge. Please try again.",
+    "errorLeave": "Could not leave the challenge. Please try again."
+  },
+  "drawer": {
+    "greeting": "Hi, {{name}}",
+    "run": "Run",
+    "activity": "Activity",
+    "stats": "Statistics",
+    "leaderboard": "Leaderboard",
+    "challenges": "Challenges",
+    "settings": "Settings"
+  },
+  "recovery": {
+    "title": "Run Recovered",
+    "subtitle": "We found a run that wasn't saved properly.",
+    "discard": "Discard"
   }
 }

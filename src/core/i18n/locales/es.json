@@ -5,41 +5,106 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "back": "Volver",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "close": "Cerrar",
+    "done": "Listo",
+    "or": "o"
   },
   "auth": {
     "login": "Iniciar sesión",
     "loginWithGoogle": "Continuar con Google",
-    "email": "Correo",
+    "email": "Email",
     "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
     "noAccount": "¿No tenés cuenta?",
-    "register": "Registrarse"
+    "register": "Registrarse",
+    "joinClub": "Unirse al club",
+    "enterClub": "Entrar al club",
+    "registerMe": "Registrarme",
+    "goBack": "Volver atrás",
+    "quote": "\"Tus piernas no están cansadas,\ntu mente te miente.\"",
+    "fillAllFields": "Completá todos los campos.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+    "errorInvalidCredential": "Email o contraseña incorrectos.",
+    "errorEmailInUse": "Este email ya está registrado.",
+    "errorInvalidEmail": "El email no es válido.",
+    "errorGeneric": "Ocurrió un error. Intentá de nuevo.",
+    "noToken": "No se pudo obtener el token de Google.",
+    "googleError": "Error al autenticar con Google. Intentá de nuevo."
   },
   "run": {
+    "begin": "COMENZAR",
     "start": "Iniciar carrera",
     "pause": "Pausar",
     "resume": "Reanudar",
     "finish": "Finalizar",
+    "go": "¡YA!",
     "distance": "Distancia",
     "pace": "Ritmo",
     "calories": "Calorías",
     "steps": "Pasos",
     "time": "Tiempo",
     "goalReached": "¡Objetivo alcanzado! Excelente trabajo.",
-    "keepScreenOpen": "Mantené esta pantalla abierta durante la carrera"
+    "keepScreenOpen": "Mantené esta pantalla abierta durante la carrera",
+    "gpsLost": "Señal GPS perdida",
+    "paused": "Pausado",
+    "gpsSearching": "Buscando señal GPS...",
+    "gpsSearchingSub": "Asegúrate de estar en un lugar despejado",
+    "setGoal": "Establece un objetivo",
+    "goal": "Objetivo: {{value}} {{unit}}",
+    "goalDistance": "Distancia objetivo",
+    "noGoal": "Sin objetivo"
+  },
+  "runDetail": {
+    "title": "Detalle de Carrera",
+    "notFound": "No se encontró la carrera."
   },
   "history": {
     "title": "Historial de carreras",
-    "noRuns": "Aún no hay carreras. ¡Salí a correr!"
+    "noRuns": "Aún no tenés carreras registradas.",
+    "noRunsSub": "¡Completá tu primera carrera para verla aquí!"
   },
   "settings": {
     "title": "Configuración",
+    "general": "General",
+    "language": "Idioma / Language",
+    "training": "Entrenamiento",
     "units": "Sistema de unidades",
     "metric": "Métrico (km)",
     "imperial": "Imperial (mi)",
     "voiceAlerts": "Alertas de voz",
-    "countdown": "Duración del conteo",
-    "goalDistance": "Distancia objetivo",
-    "language": "Idioma"
+    "frequency": "Frecuencia: cada {{value}} {{unit}}",
+    "countdown": "Cuenta regresiva",
+    "goalDistance": "Distancia objetivo"
+  },
+  "challenges": {
+    "points": "puntos",
+    "totalPoints": "Puntos totales",
+    "weeklyReset": "Los desafíos se reinician cada semana · {{week}}",
+    "active": "Desafíos en curso",
+    "available": "Nuevos desafíos",
+    "completed": "Completados",
+    "reward": "Recompensa: {{points}} puntos",
+    "join": "Retar",
+    "week": "Semana",
+    "progressText": "{{current}} km de {{target}} km",
+    "completedLabel": "{{km}} km Runner — {{year}} Semana {{week}}",
+    "errorJoin": "No se pudo unir al desafío. Intentá de nuevo.",
+    "errorLeave": "No se pudo abandonar el desafío. Intentá de nuevo."
+  },
+  "drawer": {
+    "greeting": "Hola, {{name}}",
+    "run": "Carrera",
+    "activity": "Actividad",
+    "stats": "Estadísticas",
+    "leaderboard": "Tabla de líderes",
+    "challenges": "Desafíos",
+    "settings": "Configuración"
+  },
+  "recovery": {
+    "title": "Carrera recuperada",
+    "subtitle": "Encontramos una carrera que no se guardó correctamente.",
+    "discard": "Descartar"
   }
 }
