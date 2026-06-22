@@ -4,21 +4,23 @@ import {
 } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../core/store/auth.store';
 import { logout } from '../core/services/auth.service';
 import { colors, spacing, fontSizes } from '../core/theme';
 
-const MENU_ITEMS: { label: string; icon: React.ComponentProps<typeof Ionicons>['name']; screen: string }[] = [
-  { label: 'Carrera',          icon: 'walk-outline',       screen: 'Carrera' },
-  { label: 'Actividad',        icon: 'time-outline',       screen: 'Actividad' },
-  { label: 'Estadísticas',     icon: 'bar-chart-outline',  screen: 'Estadísticas' },
-  { label: 'Tabla de líderes', icon: 'podium-outline',     screen: 'TablaLideres' },
-  { label: 'Desafíos',         icon: 'trophy-outline',     screen: 'Desafios' },
-];
-
 export default function DrawerContent({ navigation, state }: DrawerContentComponentProps) {
   const user = useAuthStore((s) => s.user);
   const activeRoute = state.routes[state.index]?.name;
+  const { t } = useTranslation();
+
+  const MENU_ITEMS: { label: string; icon: React.ComponentProps<typeof Ionicons>['name']; screen: string }[] = [
+    { label: t('drawer.run'),         icon: 'walk-outline',       screen: 'Carrera' },
+    { label: t('drawer.activity'),    icon: 'time-outline',       screen: 'Actividad' },
+    { label: t('drawer.stats'),       icon: 'bar-chart-outline',  screen: 'Estadísticas' },
+    { label: t('drawer.leaderboard'), icon: 'podium-outline',     screen: 'TablaLideres' },
+    { label: t('drawer.challenges'),  icon: 'trophy-outline',     screen: 'Desafios' },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -39,7 +41,7 @@ export default function DrawerContent({ navigation, state }: DrawerContentCompon
             <Ionicons name="person" size={36} color={colors.textMuted} />
           </View>
         )}
-        <Text style={styles.greeting}>Hola, {user?.name ?? 'Runner'}</Text>
+        <Text style={styles.greeting}>{t('drawer.greeting', { name: user?.name ?? 'Runner' })}</Text>
       </TouchableOpacity>
 
       <View style={styles.divider} />
@@ -73,11 +75,11 @@ export default function DrawerContent({ navigation, state }: DrawerContentCompon
       <View style={styles.bottom}>
         <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Settings')}>
           <Ionicons name="settings-outline" size={22} color={colors.text} style={styles.menuIcon} />
-          <Text style={styles.menuLabel}>Configuración</Text>
+          <Text style={styles.menuLabel}>{t('drawer.settings')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
           <Ionicons name="exit-outline" size={22} color={colors.primary} style={styles.menuIcon} />
-          <Text style={[styles.menuLabel, { color: colors.primary }]}>Cerrar sesión</Text>
+          <Text style={[styles.menuLabel, { color: colors.primary }]}>{t('common.logout')}</Text>
         </TouchableOpacity>
         <Text style={styles.version}>ALAMUTT RUNNING CLUB{'\n'}VERSION 2.0</Text>
       </View>

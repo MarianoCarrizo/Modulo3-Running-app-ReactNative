@@ -14,6 +14,19 @@ export const colors = {
   error: '#F44336',
   border: '#1E3060',
   inputBg: '#0F2040',
+  black: '#000000',
+  warningBright: '#FFC107',
+  modalScrim: {
+    light: 'rgba(0,0,0,0.45)',
+    medium: 'rgba(0,0,0,0.5)',
+    scrim: 'rgba(0,0,0,0.55)',
+    heavy: 'rgba(0,0,0,0.7)',
+  },
+  medal: {
+    gold: '#FFD700',
+    silver: '#C0C0C0',
+    bronze: '#CD7F32',
+  },
 };
 
 export const spacing = {
@@ -33,6 +46,11 @@ export const fontSizes = {
   xl: 24,
   xxl: 32,
   display: 56,
+  hero: 64,
+  countdown: 140,
+  trackingLarge: 48,
+  trackingMedium: 36,
+  trackingSmall: 24,
 };
 
 export const radii = {
@@ -41,13 +59,18 @@ export const radii = {
   lg: 16,
   xl: 24,
   full: 9999,
+  avatar: 60,
+};
+
+export const sizes = {
+  avatar: 120,
 };
 
 export const typography = {
-  sectionLabel:  { color: '#E8336D', fontSize: 16, fontWeight: '700' as const },
-  itemTitle:     { color: '#FFFFFF', fontSize: 16, fontWeight: '700' as const },
-  body:          { color: '#FFFFFF', fontSize: 16 },
-  caption:       { color: '#A0B0CC', fontSize: 13 },
-  muted:         { color: '#6B7FA3', fontSize: 13 },
-  label:         { color: '#FFFFFF', fontSize: 13, fontWeight: '600' as const },
+  sectionLabel:  { color: colors.primary, fontSize: 16, fontWeight: '700' as const },
+  itemTitle:     { color: colors.text, fontSize: 16, fontWeight: '700' as const },
+  body:          { color: colors.text, fontSize: 16 },
+  caption:       { color: colors.textSecondary, fontSize: 13 },
+  muted:         { color: colors.textMuted, fontSize: 13 },
+  label:         { color: colors.text, fontSize: 13, fontWeight: '600' as const },
 };

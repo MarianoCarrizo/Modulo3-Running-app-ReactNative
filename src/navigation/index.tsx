@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../core/store/auth.store';
 import { colors } from '../core/theme';
 import DrawerContent from './DrawerContent';
@@ -17,6 +18,10 @@ import ChallengesScreen from '../features/challenges/screens/ChallengesScreen';
 import ProfileScreen from '../features/profile/screens/ProfileScreen';
 import RunnerProfileScreen from '../features/profile/screens/RunnerProfileScreen';
 import SettingsScreen from '../features/settings/screens/SettingsScreen';
+import CountdownScreen from '../features/run/screens/CountdownScreen';
+import TrackingScreen from '../features/run/screens/TrackingScreen';
+import RunDetailScreen from '../features/run/screens/RunDetailScreen';
+import { RunConfig } from '../core/types';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -24,7 +29,7 @@ export type RootStackParamList = {
   Main: undefined;
   RunDetail: { runId: string };
   Tracking: undefined;
-  Countdown: undefined;
+  Countdown: { countdown: number; config: RunConfig; goalDistance: number };
   Settings: undefined;
   Language: undefined;
   RunnerProfile: { uid: string };
@@ -44,6 +49,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<MainDrawerParamList>();
 
 function MainDrawer() {
+  const { t } = useTranslation();
   return (
     <Drawer.Navigator
       drawerContent={(props) => <DrawerContent {...props} />}
@@ -53,16 +59,16 @@ function MainDrawer() {
         headerTitleStyle: { fontWeight: 'bold', fontSize: 20 },
         drawerStyle: { backgroundColor: colors.background, width: '75%' },
         drawerType: 'front',
-        overlayColor: 'rgba(0,0,0,0.5)',
+        overlayColor: colors.modalScrim.medium,
       }}
     >
-      <Drawer.Screen name="Carrera"       component={QuickStartScreen}  options={{ title: 'Carrera' }} />
-      <Drawer.Screen name="Actividad"     component={HistoryScreen}     options={{ title: 'Actividad' }} />
-      <Drawer.Screen name="Estadísticas"  component={StatsScreen}       options={{ title: 'Estadísticas' }} />
-      <Drawer.Screen name="TablaLideres"  component={LeaderboardScreen} options={{ title: 'Tabla de líderes' }} />
-      <Drawer.Screen name="Desafios"      component={ChallengesScreen}  options={{ title: 'Desafíos' }} />
+      <Drawer.Screen name="Carrera"       component={QuickStartScreen}  options={{ title: t('drawer.run') }} />
+      <Drawer.Screen name="Actividad"     component={HistoryScreen}     options={{ title: t('drawer.activity') }} />
+      <Drawer.Screen name="Estadísticas"  component={StatsScreen}       options={{ title: t('drawer.stats') }} />
+      <Drawer.Screen name="TablaLideres"  component={LeaderboardScreen} options={{ title: t('drawer.leaderboard') }} />
+      <Drawer.Screen name="Desafios"      component={ChallengesScreen}  options={{ title: t('drawer.challenges') }} />
       <Drawer.Screen name="Profile"       component={ProfileScreen}     options={{ title: 'Perfil', drawerItemStyle: { display: 'none' } }} />
-      <Drawer.Screen name="Settings"      component={SettingsScreen}    options={{ title: 'Configuración', drawerItemStyle: { display: 'none' } }} />
+      <Drawer.Screen name="Settings"      component={SettingsScreen}    options={{ title: t('drawer.settings'), drawerItemStyle: { display: 'none' } }} />
     </Drawer.Navigator>
   );
 }
@@ -92,6 +98,9 @@ export default function RootNavigator() {
           <>
             <Stack.Screen name="Main" component={MainDrawer} />
             <Stack.Screen name="RunnerProfile" component={RunnerProfileScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Countdown" component={CountdownScreen} options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="Tracking" component={TrackingScreen} options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="RunDetail" component={RunDetailScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

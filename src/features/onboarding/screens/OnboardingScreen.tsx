@@ -97,7 +97,7 @@ export default function OnboardingScreen() {
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
-        style={{ flex: 1, backgroundColor: colors.background }}
+        style={styles.scrollView}
         contentContainerStyle={[styles.container, { paddingTop: spacing.lg + insets.top, paddingBottom: spacing.xl + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
@@ -246,6 +246,7 @@ const floatStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
+  scrollView: { flex: 1, backgroundColor: colors.background },
   container: { flexGrow: 1, paddingHorizontal: spacing.lg },
   title: {
     fontSize: fontSizes.xl,

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Image, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView,
 } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { getUser } from '../../../core/services/user.service';
 import { User } from '../../../core/types';
 import { RootStackParamList } from '../../../navigation';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+import { UserAvatar, CenteredLoader } from '../../../core/components';
 
 type Route = RouteProp<RootStackParamList, 'RunnerProfile'>;
 
@@ -53,11 +54,7 @@ export default function RunnerProfileScreen() {
   }, [params.uid]);
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
+    return <CenteredLoader />;
   }
 
   if (error || !runner) {
@@ -71,13 +68,7 @@ export default function RunnerProfileScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.avatarWrap}>
-        {runner.photoUrl ? (
-          <Image source={{ uri: runner.photoUrl }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}>
-            <Ionicons name="person" size={48} color={colors.textMuted} />
-          </View>
-        )}
+        <UserAvatar uri={runner.photoUrl} />
       </View>
 
       <Text style={styles.nameText}>{runner.name || 'Runner'}</Text>
@@ -134,12 +125,6 @@ const styles = StyleSheet.create({
   errorText: { color: colors.textMuted, fontSize: fontSizes.md },
 
   avatarWrap: { marginBottom: spacing.lg },
-  avatar: { width: 120, height: 120, borderRadius: 60 },
-  avatarFallback: {
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 
   nameText: { color: colors.text, fontSize: fontSizes.xl, fontWeight: '900', marginBottom: spacing.sm },
   bioText:  { color: colors.textSecondary, fontSize: fontSizes.md, textAlign: 'center', marginBottom: spacing.xl },

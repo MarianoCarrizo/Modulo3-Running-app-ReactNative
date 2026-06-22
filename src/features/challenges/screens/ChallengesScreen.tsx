@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../../core/store/auth.store';
 import {
   ChallengeState,
@@ -15,22 +16,24 @@ import {
   unsubscribeFromChallenge,
 } from '../../../core/services/challenge.service';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
-
-function parseCompletedLabel(id: string): string {
-  const parts = id.split('-');
-  const km = parseFloat(parts[0]);
-  const year = parts[1];
-  const week = parts[2]?.replace('W', '');
-  return `${km.toFixed(2)} km Runner — ${year} Semana ${week}`;
-}
+import { CenteredLoader } from '../../../core/components';
 
 export default function ChallengesScreen() {
   const currentWeek = getCurrentWeekId();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
+  const { t } = useTranslation();
   const [state, setState] = useState<ChallengeState | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+  const parseCompletedLabel = (id: string): string => {
+    const parts = id.split('-');
+    const km = parseFloat(parts[0]);
+    const year = parts[1];
+    const week = parts[2]?.replace('W', '');
+    return t('challenges.completedLabel', { km: km.toFixed(2), year, week });
+  };
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -52,7 +55,7 @@ export default function ChallengesScreen() {
       await subscribeToChallenge(user.uid, distance);
       await load();
     } catch {
-      Alert.alert('Error', 'No se pudo unir al desafío. Intentá de nuevo.');
+      Alert.alert(t('common.error'), t('challenges.errorJoin'));
     } finally {
       setActionLoading(null);
     }
@@ -65,18 +68,14 @@ export default function ChallengesScreen() {
       await unsubscribeFromChallenge(user.uid, distance);
       await load();
     } catch {
-      Alert.alert('Error', 'No se pudo abandonar el desafío. Intentá de nuevo.');
+      Alert.alert(t('common.error'), t('challenges.errorLeave'));
     } finally {
       setActionLoading(null);
     }
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
+    return <CenteredLoader />;
   }
 
   const active = state?.activeChallenges ?? {};
@@ -91,15 +90,15 @@ export default function ChallengesScreen() {
       <View style={styles.pointsCard}>
         <Ionicons name="trophy" size={36} color={colors.primary} />
         <Text style={styles.pointsNumber}>{points}</Text>
-        <Text style={styles.pointsLabel}>puntos</Text>
-        <Text style={styles.pointsSub}>Puntos totales</Text>
+        <Text style={styles.pointsLabel}>{t('challenges.points')}</Text>
+        <Text style={styles.pointsSub}>{t('challenges.totalPoints')}</Text>
       </View>
 
       {/* Weekly disclaimer */}
       <View style={styles.disclaimerRow}>
         <Ionicons name="calendar-outline" size={13} color={colors.textMuted} />
         <Text style={styles.disclaimerText}>
-          Los desafíos se reinician cada semana · {currentWeek}
+          {t('challenges.weeklyReset', { week: currentWeek })}
         </Text>
       </View>
 
@@ -108,11 +107,12 @@ export default function ChallengesScreen() {
         <>
           <View style={styles.sectionHeader}>
             <Ionicons name="walk" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Desafíos en curso</Text>
+            <Text style={styles.sectionTitle}>{t('challenges.active')}</Text>
           </View>
           {Object.entries(active).map(([key, progress]) => {
             const target = parseFloat(key);
-            const pct = Math.round(Math.min(progress / target, 1) * 100);
+            const safeProg = progress ?? 0;
+            const pct = Math.round(Math.min(safeProg / target, 1) * 100);
             return (
               <View key={key} style={styles.card}>
                 <View style={styles.cardRow}>
@@ -133,7 +133,7 @@ export default function ChallengesScreen() {
                 </View>
                 <View style={styles.progressFooter}>
                   <Text style={styles.progressText}>
-                    {progress.toFixed(2)} km de {target.toFixed(2)} km
+                    {t('challenges.progressText', { current: safeProg.toFixed(2), target: target.toFixed(2) })}
                   </Text>
                   <Text style={styles.progressPct}>{pct}%</Text>
                 </View>
@@ -148,7 +148,7 @@ export default function ChallengesScreen() {
         <>
           <View style={styles.sectionHeader}>
             <Ionicons name="add-circle-outline" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Nuevos desafíos</Text>
+            <Text style={styles.sectionTitle}>{t('challenges.available')}</Text>
           </View>
           {available.map((distance) => (
             <View key={distance} style={styles.card}>
@@ -156,7 +156,7 @@ export default function ChallengesScreen() {
                 <View>
                   <Text style={styles.cardTitle}>{distance.toFixed(2)} km Runner</Text>
                   <Text style={styles.rewardText}>
-                    Recompensa: {Math.round(distance * 10)} puntos
+                    {t('challenges.reward', { points: Math.round(distance * 10) })}
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -166,7 +166,7 @@ export default function ChallengesScreen() {
                 >
                   {actionLoading === distance
                     ? <ActivityIndicator color={colors.text} size="small" />
-                    : <Text style={styles.retarBtnText}>Retar</Text>
+                    : <Text style={styles.retarBtnText}>{t('challenges.join')}</Text>
                   }
                 </TouchableOpacity>
               </View>
@@ -180,7 +180,7 @@ export default function ChallengesScreen() {
         <>
           <View style={styles.sectionHeader}>
             <Ionicons name="checkmark-circle-outline" size={18} color={colors.success} />
-            <Text style={[styles.sectionTitle, { color: colors.success }]}>Completados</Text>
+            <Text style={[styles.sectionTitle, { color: colors.success }]}>{t('challenges.completed')}</Text>
           </View>
           {[...completed].reverse().map((id) => (
             <View key={id} style={[styles.card, styles.completedCard]}>
@@ -198,7 +198,6 @@ export default function ChallengesScreen() {
 const styles = StyleSheet.create({
   root:    { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  center:  { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
 
   pointsCard: {
     backgroundColor: colors.surface,
