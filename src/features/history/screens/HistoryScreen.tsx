@@ -13,9 +13,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../../navigation';
 import { colors, fontSizes, spacing, radii } from '../../../core/theme';
+import { CenteredLoader } from '../../../core/components';
 import { Run } from '../../../core/types';
 import { RunRepository } from '../../run/data/RunRepository';
 import { useAuthStore } from '../../../core/store/auth.store';
+import { useRunStore } from '../../../core/store/run.store';
+import { formatDistance as fmtDist, formatPace as fmtPace } from '../../../core/utils/unitConverter';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -29,18 +32,11 @@ function formatDate(epochMs: number): string {
   });
 }
 
-function formatPace(paceMinKm: number): string {
-  if (!isFinite(paceMinKm) || isNaN(paceMinKm) || paceMinKm === 0) return '--';
-  const totalSeconds = Math.round(paceMinKm * 60);
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${String(s).padStart(2, '0')} min/km`;
-}
-
 export default function HistoryScreen() {
   const navigation = useNavigation<Nav>();
   const user = useAuthStore((s) => s.user);
   const { t } = useTranslation();
+  const unitSystem = useRunStore((s) => s.config.unitSystem);
 
   const [runs, setRuns] = useState<Run[]>([]);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null | undefined>(undefined);
@@ -96,9 +92,9 @@ export default function HistoryScreen() {
     >
       <View style={styles.itemLeft}>
         <Text style={styles.itemDate}>{formatDate(item.date)}</Text>
-        <Text style={styles.itemPace}>{formatPace(item.pace)}</Text>
+        <Text style={styles.itemPace}>{fmtPace(item.pace, unitSystem)}</Text>
       </View>
-      <Text style={styles.itemDistance}>{(item.distance / 1000).toFixed(2)} km</Text>
+      <Text style={styles.itemDistance}>{fmtDist(item.distance, unitSystem)}</Text>
     </TouchableOpacity>
   );
 
@@ -124,9 +120,7 @@ export default function HistoryScreen() {
   return (
     <View style={styles.container}>
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <CenteredLoader />
       ) : (
         <FlatList
           data={runs}
@@ -147,11 +141,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   listContent: {
     paddingHorizontal: spacing.md,

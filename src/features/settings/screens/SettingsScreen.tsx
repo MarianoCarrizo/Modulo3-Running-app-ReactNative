@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch,
+  View, Text, StyleSheet, ScrollView, Switch,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, fontSizes, radii, typography } from '../../../core/theme';
+import { colors, spacing, typography } from '../../../core/theme';
+import { RadioButton, Chip } from '../../../core/components';
 import { useRunStore } from '../../../core/store/run.store';
 import i18n from '../../../core/i18n';
 import { useTranslation } from 'react-i18next';
@@ -107,35 +108,16 @@ export default function SettingsScreen() {
         <Text style={styles.itemTitle}>{t('settings.countdown')}</Text>
         <View style={styles.chipRow}>
           {COUNTDOWN_OPTIONS.map((s) => (
-            <TouchableOpacity
+            <Chip
               key={s}
-              style={[styles.chip, config.countdown === s && styles.chipActive]}
+              label={`${s}s`}
+              selected={config.countdown === s}
               onPress={() => setConfig({ ...config, countdown: s })}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.chipText, config.countdown === s && styles.chipTextActive]}>
-                {s}s
-              </Text>
-            </TouchableOpacity>
+            />
           ))}
         </View>
       </View>
     </ScrollView>
-  );
-}
-
-function RadioButton({ label, selected, onPress }: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity style={styles.radioOption} onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
-        {selected && <View style={styles.radioInner} />}
-      </View>
-      <Text style={styles.radioLabel}>{label}</Text>
-    </TouchableOpacity>
   );
 }
 
@@ -152,39 +134,10 @@ const styles = StyleSheet.create({
   itemDivider: { height: 1, backgroundColor: colors.border },
 
   radioRow: { flexDirection: 'row', marginTop: spacing.sm, gap: spacing.xl },
-  radioOption: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  radioOuter: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.textMuted,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioOuterSelected: { borderColor: colors.primary },
-  radioInner: {
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: colors.primary,
-  },
-  radioLabel: { ...typography.body },
 
   sliderSection: { paddingBottom: spacing.sm },
   freqLabel: { ...typography.caption, marginTop: spacing.xs },
   slider: { marginHorizontal: -spacing.sm },
 
   chipRow: { flexDirection: 'row', marginTop: spacing.sm, gap: spacing.sm },
-  chip: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    minWidth: 52,
-    alignItems: 'center',
-  },
-  chipActive:     { backgroundColor: colors.primary },
-  chipText:       { ...typography.label },
-  chipTextActive: { ...typography.label, fontWeight: '700' },
 });

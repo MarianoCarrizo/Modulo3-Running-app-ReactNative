@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Image,
+  Image,
 } from 'react-native';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { db } from '../../../core/config/firebase';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+import { CenteredLoader } from '../../../core/components';
 import { RootStackParamList } from '../../../navigation';
+import { useRunStore } from '../../../core/store/run.store';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type FilterKey = 'totalDistance' | 'totalCalories' | 'totalSteps' | 'points' | 'bestPace';
+type UnitSystem = 'metric' | 'imperial';
 
 interface LeaderboardUser {
   uid: string;
@@ -25,49 +29,56 @@ interface LeaderboardUser {
   bestPace: number;
 }
 
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'totalDistance', label: 'Distancia' },
-  { key: 'totalCalories', label: 'Calorías' },
-  { key: 'totalSteps',    label: 'Pasos' },
-  { key: 'points',        label: 'Puntos' },
-  { key: 'bestPace',      label: 'Paso' },
-];
-
-const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
+const RANK_COLORS = [colors.medal.gold, colors.medal.silver, colors.medal.bronze];
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-function formatDistance(km: number) { return km.toFixed(1); }
-function formatPace(s: number) {
-  const mins = Math.floor(s / 60);
-  const secs = Math.floor(s % 60);
+function formatPace(paceMinKm: number, unitSystem: UnitSystem): string {
+  if (!paceMinKm || paceMinKm <= 0) return 'N/A';
+  const pace = unitSystem === 'imperial' ? paceMinKm * 1.60934 : paceMinKm;
+  const totalSeconds = Math.round(pace * 60);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-function getValue(user: LeaderboardUser, filter: FilterKey): string {
+function getValue(user: LeaderboardUser, filter: FilterKey, unitSystem: UnitSystem): string {
   switch (filter) {
-    case 'totalDistance': return formatDistance(user.totalDistance);
+    case 'totalDistance': {
+      const display = unitSystem === 'imperial' ? user.totalDistance * 0.621371 : user.totalDistance;
+      return display.toFixed(1);
+    }
     case 'totalCalories': return user.totalCalories.toString();
     case 'totalSteps':    return user.totalSteps.toLocaleString();
     case 'points':        return user.points.toString();
-    case 'bestPace':      return user.bestPace > 0 ? formatPace(user.bestPace) : 'N/A';
+    case 'bestPace':      return formatPace(user.bestPace, unitSystem);
   }
 }
 
-function getUnit(filter: FilterKey): string {
+function getUnit(filter: FilterKey, unitSystem: UnitSystem, t: (k: string) => string): string {
   switch (filter) {
-    case 'totalDistance': return 'KM';
+    case 'totalDistance': return unitSystem === 'imperial' ? 'MI' : 'KM';
     case 'totalCalories': return 'KCAL';
-    case 'totalSteps':    return 'PASOS';
-    case 'points':        return 'PTS';
-    case 'bestPace':      return 'MIN/KM';
+    case 'totalSteps':    return t('leaderboard.unitSteps');
+    case 'points':        return t('leaderboard.unitPts');
+    case 'bestPace':      return unitSystem === 'imperial' ? 'MIN/MI' : 'MIN/KM';
   }
 }
 
 export default function LeaderboardScreen() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
+  const unitSystem = useRunStore((s) => s.config.unitSystem);
   const [activeFilter, setActiveFilter] = useState<FilterKey>('totalDistance');
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const FILTERS: { key: FilterKey; label: string }[] = [
+    { key: 'totalDistance', label: t('leaderboard.distance') },
+    { key: 'totalCalories', label: t('leaderboard.calories') },
+    { key: 'totalSteps',    label: t('leaderboard.steps') },
+    { key: 'points',        label: t('leaderboard.points') },
+    { key: 'bestPace',      label: t('leaderboard.pace') },
+  ];
 
   const load = useCallback(async (filter: FilterKey) => {
     setLoading(true);
@@ -119,12 +130,10 @@ export default function LeaderboardScreen() {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.primary} size="large" />
-        </View>
+        <CenteredLoader />
       ) : users.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyText}>Sin datos todavía</Text>
+          <Text style={styles.emptyText}>{t('leaderboard.noData')}</Text>
         </View>
       ) : (
         <FlatList
@@ -157,9 +166,9 @@ export default function LeaderboardScreen() {
 
                 <View style={styles.stat}>
                   <Text style={[styles.statValue, { color: index < 3 ? rankColor : colors.text }]}>
-                    {getValue(item, activeFilter)}
+                    {getValue(item, activeFilter, unitSystem)}
                   </Text>
-                  <Text style={styles.statUnit}>{getUnit(activeFilter)}</Text>
+                  <Text style={styles.statUnit}>{getUnit(activeFilter, unitSystem, t)}</Text>
                 </View>
               </TouchableOpacity>
             );

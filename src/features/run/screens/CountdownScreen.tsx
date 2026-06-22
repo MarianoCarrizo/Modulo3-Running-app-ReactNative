@@ -4,6 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../../navigation';
 import { colors, fontSizes } from '../../../core/theme';
+
 import { useRunStore } from '../../../core/store/run.store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Countdown'>;
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
   },
   number: {
     color: colors.primary,
-    fontSize: 140,
+    fontSize: fontSizes.countdown,
     fontWeight: 'bold',
   },
 });

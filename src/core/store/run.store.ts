@@ -12,6 +12,7 @@ import {
   dismissRunNotification,
 } from '../../features/run/services/runNotification';
 import { formatDistance, formatPace as fmtPace } from '../utils/unitConverter';
+import { formatTime } from '../utils/time';
 import { updateUserStats } from '../services/challenge.service';
 import { useAuthStore } from './auth.store';
 
@@ -27,19 +28,6 @@ const defaultConfig: RunConfig = {
   countdown: 3,
 };
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatPace(paceMinKm: number): string {
-  if (!isFinite(paceMinKm) || isNaN(paceMinKm)) return '--';
-  const totalSeconds = Math.round(paceMinKm * 60);
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${String(s).padStart(2, '0')} /km`;
-}
 
 interface RunStore {
   runState: RunState;
@@ -303,7 +291,7 @@ export const useRunStore = create<RunStore>((set, get) => ({
       const nextMilestone = lastMilestoneKm + config.alertFrequencyKm;
       if (distKm >= nextMilestone) {
         lastMilestoneKm = nextMilestone;
-        const paceStr = formatPace(result.averagePace);
+        const paceStr = fmtPace(result.averagePace, config.unitSystem);
         Speech.speak(
           `${distKm.toFixed(1)} kilómetros. Ritmo: ${paceStr}`,
           { language: 'es-ES' }

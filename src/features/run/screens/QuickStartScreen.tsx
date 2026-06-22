@@ -12,6 +12,11 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+
+const LEAFLET_PRIMARY_COLOR = colors.primary;
+const LEAFLET_TEXT_COLOR = colors.text;
+const LEAFLET_MARKER_RING = `rgba(232,51,109,0.2)`;
+const START_BUTTON_SIZE = 120;
 import { MainDrawerParamList, RootStackParamList } from '../../../navigation';
 import { useRunStore } from '../../../core/store/run.store';
 import { unitLabel, displayToMeters } from '../../../core/utils/unitConverter';
@@ -81,7 +86,7 @@ function buildMapHtml(lat: number, lng: number): string {
       maxZoom: 19
     }).addTo(map);
 
-    var dotHtml = '<div style="width:14px;height:14px;background:#E8336D;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 7px rgba(232,51,109,0.2);"></div>';
+    var dotHtml = '<div style="width:14px;height:14px;background:${LEAFLET_PRIMARY_COLOR};border-radius:50%;border:2.5px solid ${LEAFLET_TEXT_COLOR};box-shadow:0 0 0 7px ${LEAFLET_MARKER_RING};"></div>';
     var dotIcon = L.divIcon({ html: dotHtml, iconSize: [14,14], iconAnchor: [7,7], className: '' });
     var marker = L.marker([${lat}, ${lng}], { icon: dotIcon }).addTo(map);
 
@@ -345,9 +350,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 120,
     alignSelf: 'center',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: START_BUTTON_SIZE,
+    height: START_BUTTON_SIZE,
+    borderRadius: START_BUTTON_SIZE / 2,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -395,7 +400,7 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: colors.modalScrim.scrim,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },

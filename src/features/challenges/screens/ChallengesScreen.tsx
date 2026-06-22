@@ -16,6 +16,7 @@ import {
   unsubscribeFromChallenge,
 } from '../../../core/services/challenge.service';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+import { CenteredLoader } from '../../../core/components';
 
 export default function ChallengesScreen() {
   const currentWeek = getCurrentWeekId();
@@ -74,11 +75,7 @@ export default function ChallengesScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
+    return <CenteredLoader />;
   }
 
   const active = state?.activeChallenges ?? {};
@@ -201,7 +198,6 @@ export default function ChallengesScreen() {
 const styles = StyleSheet.create({
   root:    { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  center:  { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
 
   pointsCard: {
     backgroundColor: colors.surface,

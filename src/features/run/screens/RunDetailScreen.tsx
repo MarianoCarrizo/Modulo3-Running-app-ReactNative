@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +13,10 @@ import { RootStackParamList } from '../../../navigation';
 import { colors, fontSizes, spacing, radii } from '../../../core/theme';
 import { Run } from '../../../core/types';
 import { RunRepository } from '../data/RunRepository';
+import { useRunStore } from '../../../core/store/run.store';
+import { formatDistance as fmtDist, formatPace as fmtPace } from '../../../core/utils/unitConverter';
+import { formatTime } from '../../../core/utils/time';
+import { CenteredLoader } from '../../../core/components';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RunDetail'>;
 
@@ -27,25 +30,14 @@ function formatDate(epochMs: number): string {
   });
 }
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatPace(paceMinKm: number): string {
-  if (!isFinite(paceMinKm) || isNaN(paceMinKm) || paceMinKm === 0) return '--';
-  const totalSeconds = Math.round(paceMinKm * 60);
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${String(s).padStart(2, '0')} min/km`;
-}
+const SAFE_AREA_TOP_PADDING = 52;
 
 export default function RunDetailScreen({ navigation, route }: Props) {
   const { runId } = route.params;
   const [run, setRun] = useState<Run | null>(null);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
+  const unitSystem = useRunStore((s) => s.config.unitSystem);
 
   useEffect(() => {
     RunRepository.getRunById(runId)
@@ -63,11 +55,7 @@ export default function RunDetailScreen({ navigation, route }: Props) {
         <Text style={styles.headerTitle}>{t('runDetail.title')}</Text>
       </View>
 
-      {loading && (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      )}
+      {loading && <CenteredLoader />}
 
       {!loading && !run && (
         <View style={styles.centered}>
@@ -82,14 +70,14 @@ export default function RunDetailScreen({ navigation, route }: Props) {
           <View style={styles.distanceCard}>
             <Text style={styles.distanceLabel}>{t('run.distance')}</Text>
             <Text style={styles.distanceValue}>
-              {(run.distance / 1000).toFixed(2)} km
+              {fmtDist(run.distance, unitSystem)}
             </Text>
           </View>
 
           <View style={styles.grid}>
             <View style={styles.gridItem}>
               <Text style={styles.gridLabel}>{t('run.pace')}</Text>
-              <Text style={styles.gridValue}>{formatPace(run.pace)}</Text>
+              <Text style={styles.gridValue}>{fmtPace(run.pace, unitSystem)}</Text>
             </View>
             <View style={styles.gridItem}>
               <Text style={styles.gridLabel}>{t('run.time')}</Text>
@@ -118,7 +106,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 52,
+    paddingTop: SAFE_AREA_TOP_PADDING,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
   },

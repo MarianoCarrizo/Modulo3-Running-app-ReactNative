@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../../navigation';
-import { colors } from '../../../core/theme';
+import { colors, fontSizes, spacing } from '../../../core/theme';
+import { formatTime } from '../../../core/utils/time';
 import { useRunStore } from '../../../core/store/run.store';
 import { LOCATION_TASK_NAME } from '../tasks/locationTask';
 import { useAuthStore } from '../../../core/store/auth.store';
@@ -16,12 +17,7 @@ import { formatDistance, formatPace as formatPaceUnit } from '../../../core/util
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Tracking'>;
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
+const TRACKING_SPACER_LG = 56;
 
 export default function TrackingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -58,7 +54,7 @@ export default function TrackingScreen({ navigation }: Props) {
         foregroundService: {
           notificationTitle: 'Alamutt Running',
           notificationBody: '',
-          notificationColor: '#E8336D',
+          notificationColor: colors.primary,
         },
       }).catch(() => {});
     });
@@ -115,25 +111,21 @@ export default function TrackingScreen({ navigation }: Props) {
     <View style={styles.container}>
       {gpsLost && (
         <View style={[styles.gpsBanner, { top: bannerTop }]}>
-          <Ionicons name="warning" size={20} color="#000" />
+          <Ionicons name="warning" size={20} color={colors.black} />
           <Text style={styles.gpsBannerText}>{t('run.gpsLost')}</Text>
         </View>
       )}
 
       <View style={styles.content}>
         <Text style={styles.metricLabel}>{t('run.time')}</Text>
-        <Text style={styles.timeValue}>{formatTime(timerSeconds)}</Text>
-
-        <View style={styles.spacer24} />
+        <Text style={[styles.timeValue, { marginBottom: spacing.lg }]}>{formatTime(timerSeconds)}</Text>
 
         <Text style={styles.metricLabel}>{t('run.distance')}</Text>
-        <Text style={[styles.distanceValue, hasGoal && styles.distanceValueGoal]}>
+        <Text style={[styles.distanceValue, hasGoal && styles.distanceValueGoal, { marginBottom: spacing.xl }]}>
           {distanceLabel}{hasGoal ? ` / ${goalLabel}` : ''}
         </Text>
 
-        <View style={styles.spacer32} />
-
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, { marginBottom: TRACKING_SPACER_LG }]}>
           <View style={styles.statItem}>
             <Text style={styles.metricLabel}>{t('run.steps')}</Text>
             <Text style={styles.statValue}>{steps}</Text>
@@ -147,8 +139,6 @@ export default function TrackingScreen({ navigation }: Props) {
             <Text style={styles.statValue}>{Math.round(calories)}</Text>
           </View>
         </View>
-
-        <View style={styles.spacer56} />
 
         <View style={styles.controls}>
           <TouchableOpacity style={styles.stopBtn} onPress={handleStop}>
@@ -180,13 +170,13 @@ const styles = StyleSheet.create({
     zIndex: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFC107',
+    backgroundColor: colors.warningBright,
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 8,
   },
   gpsBannerText: {
-    color: '#000',
+    color: colors.black,
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -204,22 +194,19 @@ const styles = StyleSheet.create({
   },
   timeValue: {
     color: colors.text,
-    fontSize: 64,
+    fontSize: fontSizes.hero,
     fontWeight: '900',
     fontVariant: ['tabular-nums'],
   },
   distanceValue: {
     color: colors.text,
-    fontSize: 48,
+    fontSize: fontSizes.trackingLarge,
     fontWeight: '900',
   },
   distanceValueGoal: {
     color: colors.primary,
-    fontSize: 36,
+    fontSize: fontSizes.trackingMedium,
   },
-  spacer24: { height: 24 },
-  spacer32: { height: 32 },
-  spacer56: { height: 56 },
   statsRow: {
     flexDirection: 'row',
     width: '100%',
@@ -231,7 +218,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     color: colors.text,
-    fontSize: 24,
+    fontSize: fontSizes.trackingSmall,
     fontWeight: '800',
   },
   controls: {

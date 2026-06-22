@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors, fontSizes, spacing, radii } from '../../../core/theme';
+import { formatTime } from '../../../core/utils/time';
 import { RunCheckpoint } from '../../../core/types';
 import { clearCheckpoint } from '../services/checkpoint';
 import { RunRepository } from '../data/RunRepository';
@@ -16,12 +17,6 @@ import { RunRepository } from '../data/RunRepository';
 interface Props {
   checkpoint: RunCheckpoint;
   onDismiss: () => void;
-}
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 function formatPace(paceMinKm: number): string {
@@ -120,7 +115,7 @@ export default function RunRecoveryDialog({ checkpoint, onDismiss }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: colors.modalScrim.heavy,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,

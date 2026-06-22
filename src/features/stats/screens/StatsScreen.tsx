@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView,
 } from 'react-native';
 import { collection, query, where, getCountFromServer } from 'firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { db } from '../../../core/config/firebase';
 import { useAuthStore } from '../../../core/store/auth.store';
+import { useRunStore } from '../../../core/store/run.store';
+import { metersToDisplay, unitLabel } from '../../../core/utils/unitConverter';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+import { CenteredLoader } from '../../../core/components';
 
 interface Ranks {
   distance: number;
@@ -70,6 +74,8 @@ async function fetchRank(field: string, value: number): Promise<number> {
 
 export default function StatsScreen() {
   const user = useAuthStore((s) => s.user);
+  const { t } = useTranslation();
+  const unitSystem = useRunStore((s) => s.config.unitSystem);
   const [ranks, setRanks] = useState<Ranks | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -93,11 +99,7 @@ export default function StatsScreen() {
   if (!user) return null;
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
+    return <CenteredLoader />;
   }
 
   return (
@@ -105,7 +107,7 @@ export default function StatsScreen() {
       <StatCard
         icon="star"
         value={Number(user.points ?? 0).toLocaleString()}
-        label="Puntos"
+        label={t('stats.points')}
         rank={ranks?.points}
         highlight
         flex={0}
@@ -114,16 +116,16 @@ export default function StatsScreen() {
       <View style={styles.row}>
         <StatCard
           icon="navigate"
-          value={(user.totalDistance ?? 0).toFixed(1)}
-          unit="km"
+          value={metersToDisplay((user.totalDistance ?? 0) * 1000, unitSystem).toFixed(1)}
+          unit={unitLabel(unitSystem)}
           inlineUnit
-          label="Distancia total"
+          label={t('stats.totalDistance')}
           rank={ranks?.distance}
         />
         <StatCard
           icon="repeat"
           value={(user.totalRuns ?? 0).toString()}
-          label="Carreras"
+          label={t('stats.runs')}
           rank={ranks?.runs}
         />
       </View>
@@ -132,13 +134,13 @@ export default function StatsScreen() {
         <StatCard
           icon="flame"
           value={(user.totalCalories ?? 0).toString()}
-          label="Calorías"
+          label={t('stats.calories')}
           rank={ranks?.calories}
         />
         <StatCard
           icon="footsteps"
           value={(user.totalSteps ?? 0).toLocaleString()}
-          label="Pasos totales"
+          label={t('stats.totalSteps')}
           rank={ranks?.steps}
         />
       </View>
@@ -149,7 +151,6 @@ export default function StatsScreen() {
 const styles = StyleSheet.create({
   root:    { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.md },
-  center:  { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
   row:     { flexDirection: 'row', gap: spacing.md },
 
   card: {
