@@ -44,7 +44,7 @@ export const RunRepository = {
           limit(pageSize)
         );
     const snap = await getDocs(q);
-    const runs: Run[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Run));
+    const runs: Run[] = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Run));
     const nextLastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
     return { runs, lastDoc: nextLastDoc };
   },
@@ -52,6 +52,6 @@ export const RunRepository = {
   async getRunById(runId: string): Promise<Run | null> {
     const snap = await getDoc(doc(db, RUNS_COLLECTION, runId));
     if (!snap.exists()) return null;
-    return { id: snap.id, ...snap.data() } as Run;
+    return { ...snap.data(), id: snap.id } as Run;
   },
 };
