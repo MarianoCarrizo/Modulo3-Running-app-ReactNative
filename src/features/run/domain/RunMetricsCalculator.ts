@@ -60,8 +60,6 @@ export class RunMetricsCalculator {
       if (dtMs > 0) elapsedSeconds = dtMs / 1000;
     }
 
-    // GPS Doppler speed is accurate for stationary detection even when position drifts.
-    // Fall back to calculated speed only when the chip doesn't report speed.
     const dopplerSpeed = current.speed;
     const calculatedSpeed = elapsedSeconds > 0 ? distM / elapsedSeconds : 0;
     const effectiveSpeed = dopplerSpeed !== null ? dopplerSpeed : calculatedSpeed;
@@ -70,7 +68,6 @@ export class RunMetricsCalculator {
     const isMoving = effectiveSpeed >= MIN_SPEED_MPS;
     const isVehicle = effectiveSpeed > MAX_SPEED_MPS;
 
-    // Always advance the reference point (like native) to prevent distance jumps on recovery.
     this.prevCoords = current;
 
     if (!gpsValid || distM < MIN_DISTANCE_M || isVehicle || !isMoving) {

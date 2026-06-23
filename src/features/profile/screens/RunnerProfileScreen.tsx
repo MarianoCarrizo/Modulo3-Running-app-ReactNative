@@ -13,9 +13,11 @@ import { UserAvatar, CenteredLoader } from '../../../core/components';
 type Route = RouteProp<RootStackParamList, 'RunnerProfile'>;
 
 function formatDistance(km: number) { return km.toFixed(1); }
-function formatPace(s: number) {
-  const mins = Math.floor(s / 60);
-  const secs = Math.floor(s % 60);
+function formatPace(paceMinKm: number) {
+  if (!isFinite(paceMinKm) || paceMinKm <= 0) return '--:--';
+  const totalSeconds = Math.round(paceMinKm * 60);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
@@ -82,7 +84,7 @@ export default function RunnerProfileScreen() {
       <View style={styles.grid}>
         <StatCard
           icon="map-outline"
-          value={formatDistance(runner.totalDistance)}
+          value={formatDistance(runner.totalDistance ?? 0)}
           unit="km"
           label="Distancia"
         />
@@ -94,13 +96,13 @@ export default function RunnerProfileScreen() {
         />
         <StatCard
           icon="flame-outline"
-          value={runner.totalCalories.toString()}
+          value={(runner.totalCalories ?? 0).toString()}
           unit="kcal"
           label="Calorías"
         />
         <StatCard
           icon="walk-outline"
-          value={runner.totalSteps.toLocaleString()}
+          value={(runner.totalSteps ?? 0).toLocaleString()}
           unit=""
           label="Pasos"
         />

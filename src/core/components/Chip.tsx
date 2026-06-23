@@ -1,4 +1,3 @@
-import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { colors, spacing, radii, fontSizes } from '../theme';
 

@@ -14,9 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
 
 const LEAFLET_PRIMARY_COLOR = colors.primary;
-const LEAFLET_TEXT_COLOR = colors.text;
-const LEAFLET_MARKER_RING = `rgba(232,51,109,0.2)`;
-const START_BUTTON_SIZE = 120;
+const LEAFLET_MARKER_RING = `rgba(232,51,109,0.25)`;
+
+const MAP_ZOOM     = 18;
+const DOT_CORE_PX  = 14;
+const DOT_OUTER_PX = 30;
+const DOT_ANCHOR   = DOT_OUTER_PX / 2;
+const DOT_OFFSET   = (DOT_OUTER_PX - DOT_CORE_PX) / 2;
 import { MainDrawerParamList, RootStackParamList } from '../../../navigation';
 import { useRunStore } from '../../../core/store/run.store';
 import { unitLabel, displayToMeters } from '../../../core/utils/unitConverter';
@@ -66,6 +70,35 @@ function buildMapHtml(lat: number, lng: number): string {
     html, body, #map { width: 100%; height: 100%; }
     html, body { overflow: hidden; overscroll-behavior: none; touch-action: none; }
     .leaflet-control-container { display: none !important; }
+
+    .dot-wrapper {
+      position: relative;
+      width: ${DOT_OUTER_PX}px;
+      height: ${DOT_OUTER_PX}px;
+    }
+    .dot-pulse {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: ${LEAFLET_MARKER_RING};
+      animation: pulse 2s ease-out infinite;
+    }
+    .dot-core {
+      position: absolute;
+      width: ${DOT_CORE_PX}px;
+      height: ${DOT_CORE_PX}px;
+      top: ${DOT_OFFSET}px;
+      left: ${DOT_OFFSET}px;
+      background: ${LEAFLET_PRIMARY_COLOR};
+      border-radius: 50%;
+      border: 2.5px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    @keyframes pulse {
+      0%   { transform: scale(0.5); opacity: 0.9; }
+      70%  { transform: scale(3);   opacity: 0;   }
+      100% { transform: scale(3);   opacity: 0;   }
+    }
   </style>
 </head>
 <body>
@@ -80,25 +113,27 @@ function buildMapHtml(lat: number, lng: number): string {
       boxZoom: false,
       keyboard: false,
       tap: false
-    }).setView([${lat}, ${lng}], 17);
+    }).setView([${lat}, ${lng}], ${MAP_ZOOM});
+
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19
     }).addTo(map);
 
-    var dotHtml = '<div style="width:14px;height:14px;background:${LEAFLET_PRIMARY_COLOR};border-radius:50%;border:2.5px solid ${LEAFLET_TEXT_COLOR};box-shadow:0 0 0 7px ${LEAFLET_MARKER_RING};"></div>';
-    var dotIcon = L.divIcon({ html: dotHtml, iconSize: [14,14], iconAnchor: [7,7], className: '' });
+    var dotHtml = '<div class="dot-wrapper"><div class="dot-pulse"></div><div class="dot-core"></div></div>';
+    var dotIcon = L.divIcon({
+      html: dotHtml,
+      iconSize: [${DOT_OUTER_PX}, ${DOT_OUTER_PX}],
+      iconAnchor: [${DOT_ANCHOR}, ${DOT_ANCHOR}],
+      className: ''
+    });
     var marker = L.marker([${lat}, ${lng}], { icon: dotIcon }).addTo(map);
 
     function handleMsg(data) {
       try {
         var msg = JSON.parse(data);
-        if (msg.type === 'location') {
-          marker.setLatLng([msg.lat, msg.lng]);
-        }
-        if (msg.type === 'center') {
-          map.setView([msg.lat, msg.lng], 17, { animate: true });
-        }
+        if (msg.type === 'location') { marker.setLatLng([msg.lat, msg.lng]); }
+        if (msg.type === 'center')   { map.setView([msg.lat, msg.lng], ${MAP_ZOOM}, { animate: true }); }
       } catch(e) {}
     }
 
@@ -190,19 +225,36 @@ export default function QuickStartScreen() {
       {gpsReady && mapHtmlRef.current && (
         <>
           <MapWebView ref={webViewRef} html={mapHtmlRef.current} />
-          <TouchableOpacity style={styles.startBtn} onPress={handleStart}>
-            <Text style={styles.startBtnText}>{t('run.begin')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gearBtn} onPress={() => setConfigVisible(true)}>
-            <Ionicons name="settings" size={26} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.objectiveBtn} onPress={() => setGoalVisible(true)}>
-            <Text style={styles.objectiveBtnText}>
-              {goalDisplay > 0
-                ? t('run.goal', { value: goalDisplay.toFixed(1), unit: unitLabel(config.unitSystem) })
-                : t('run.setGoal')}
-            </Text>
-          </TouchableOpacity>
+
+          {goalDisplay > 0 && (
+            <View style={styles.goalChip}>
+              <Ionicons name="flag" size={14} color={colors.text} />
+              <Text style={styles.goalChipText}>
+                {t('run.goal', { value: goalDisplay.toFixed(2), unit: unitLabel(config.unitSystem) })}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setGoalDisplay(0)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close" size={16} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.bottomControls}>
+            <View style={styles.mainBtnRow}>
+              <TouchableOpacity style={styles.gearBtn} onPress={() => setConfigVisible(true)}>
+                <Ionicons name="settings" size={26} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.startBtn} onPress={handleStart}>
+                <Text style={styles.startBtnText}>{t('run.begin')}</Text>
+              </TouchableOpacity>
+              <View style={styles.gearPlaceholder} />
+            </View>
+            <TouchableOpacity style={styles.objectiveBtn} onPress={() => setGoalVisible(true)}>
+              <Text style={styles.objectiveBtnText}>{t('run.setGoal')}</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
 
@@ -346,13 +398,47 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
 
-  startBtn: {
+  goalChip: {
     position: 'absolute',
-    bottom: 120,
+    top: 16,
     alignSelf: 'center',
-    width: START_BUTTON_SIZE,
-    height: START_BUTTON_SIZE,
-    borderRadius: START_BUTTON_SIZE / 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radii.full,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    gap: spacing.xs,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  goalChipText: {
+    color: colors.text,
+    fontSize: fontSizes.sm,
+    fontWeight: '600',
+  },
+  bottomControls: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+  mainBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 28,
+    marginBottom: spacing.md,
+  },
+  startBtn: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -369,10 +455,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   gearBtn: {
-    position: 'absolute',
-    bottom: 150,
-    alignSelf: 'center',
-    transform: [{ translateX: -100 }],
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -381,11 +463,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
   },
+  gearPlaceholder: {
+    width: 60,
+    height: 60,
+  },
   objectiveBtn: {
-    position: 'absolute',
-    bottom: 40,
-    left: spacing.lg,
-    right: spacing.lg,
     backgroundColor: colors.background,
     borderRadius: radii.full,
     paddingVertical: spacing.md,
