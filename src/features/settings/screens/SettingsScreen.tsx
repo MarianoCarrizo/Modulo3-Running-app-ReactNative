@@ -18,7 +18,10 @@ export default function SettingsScreen() {
   const config = useRunStore((s) => s.config);
   const setConfig = useRunStore((s) => s.setConfig);
   const { t } = useTranslation();
-  const [language, setLanguage] = useState(i18n.language?.startsWith('en') ? 'en' : 'es');
+  const currentLang = i18n.language ?? 'es';
+  const [language, setLanguage] = useState(
+    currentLang.startsWith('en') ? 'en' : currentLang.startsWith('pt') ? 'pt' : 'es'
+  );
 
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
@@ -44,6 +47,11 @@ export default function SettingsScreen() {
             label="English"
             selected={language === 'en'}
             onPress={() => handleLanguageChange('en')}
+          />
+          <RadioButton
+            label="Português"
+            selected={language === 'pt'}
+            onPress={() => handleLanguageChange('pt')}
           />
         </View>
       </View>
