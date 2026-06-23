@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import en from './locales/en.json';
 import es from './locales/es.json';
+import pt from './locales/pt.json';
 
 const LANGUAGE_KEY = 'user_language';
 
@@ -24,7 +25,7 @@ i18n
   .use(languageDetector)
   .use(initReactI18next)
   .init({
-    resources: { en: { translation: en }, es: { translation: es } },
+    resources: { en: { translation: en }, es: { translation: es }, pt: { translation: pt } },
     fallbackLng: 'es',
     interpolation: { escapeValue: false },
   });
