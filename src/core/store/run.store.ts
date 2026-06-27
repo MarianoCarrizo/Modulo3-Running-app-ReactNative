@@ -119,6 +119,14 @@ export const useRunStore = create<RunStore>((set, get) => ({
     const now = Date.now();
     calculator.reset();
 
+    const startState = get();
+    const startUnit = startState.config.unitSystem;
+    showRunNotification(
+      formatDistance(0, startUnit),
+      fmtPace(NaN, startUnit),
+      formatTime(0)
+    ).catch(() => {});
+
     const interval = setInterval(() => {
       const state = get();
       if (state.runState !== 'running') return;
@@ -133,13 +141,6 @@ export const useRunStore = create<RunStore>((set, get) => ({
       set({ timerSeconds: newSeconds, calories, _checkpointCounter: counter });
 
       const updatedState = get();
-
-      const unit = updatedState.config.unitSystem;
-      showRunNotification(
-        formatDistance(updatedState.distanceMeters, unit),
-        fmtPace(updatedState.averagePace, unit),
-        formatTime(updatedState.timerSeconds)
-      ).catch(() => {});
 
       if (counter >= CHECKPOINT_INTERVAL_S) {
         set({ _checkpointCounter: 0 });
@@ -183,6 +184,14 @@ export const useRunStore = create<RunStore>((set, get) => ({
   },
 
   resumeRun: () => {
+    const resumeState = get();
+    const resumeUnit = resumeState.config.unitSystem;
+    showRunNotification(
+      formatDistance(resumeState.distanceMeters, resumeUnit),
+      fmtPace(resumeState.averagePace, resumeUnit),
+      formatTime(resumeState.timerSeconds)
+    ).catch(() => {});
+
     const interval = setInterval(() => {
       const state = get();
       if (state.runState !== 'running') return;
@@ -195,12 +204,6 @@ export const useRunStore = create<RunStore>((set, get) => ({
       set({ timerSeconds: newSeconds, calories, _checkpointCounter: counter });
 
       const updatedState = get();
-      const unit2 = updatedState.config.unitSystem;
-      showRunNotification(
-        formatDistance(updatedState.distanceMeters, unit2),
-        fmtPace(updatedState.averagePace, unit2),
-        formatTime(updatedState.timerSeconds)
-      ).catch(() => {});
 
       if (counter >= CHECKPOINT_INTERVAL_S) {
         set({ _checkpointCounter: 0 });

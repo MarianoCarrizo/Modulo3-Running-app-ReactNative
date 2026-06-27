@@ -1,56 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Alert, View, Text, TextInput, TouchableOpacity, StyleSheet,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
   ImageBackground, ActivityIndicator, KeyboardAvoidingView,
   Platform, ScrollView, Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { loginWithEmail, registerWithEmail, loginWithGoogleCredential } from '../../../core/services/auth.service';
+import { loginWithEmail, registerWithEmail } from '../../../core/services/auth.service';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
 
-WebBrowser.maybeCompleteAuthSession();
-
 const { height } = Dimensions.get('window');
-const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
-const IS_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-
-// Isolated component so the Google hook never runs inside Expo Go (it can't!!!!! only on prod builds!!!!)
-function GoogleAuthHandler({ triggerRef, onStart, onDone, onError }: {
-  triggerRef: React.MutableRefObject<(() => void) | null>;
-  onStart: () => void;
-  onDone: () => void;
-  onError: (msg: string) => void;
-}) {
-  const [, response, promptAsync] = Google.useAuthRequest({ clientId: GOOGLE_CLIENT_ID });
-
-  useEffect(() => {
-    triggerRef.current = () => { onStart(); promptAsync(); };
-  }, [promptAsync]);
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const idToken = response.authentication?.idToken ?? response.params?.id_token;
-      if (idToken) {
-        loginWithGoogleCredential(idToken)
-          .then(onDone)
-          .catch((e: unknown) => { onDone(); onError(e instanceof Error ? e.message : 'Google auth failed.'); });
-      } else {
-        onDone();
-        onError('auth.noToken');
-      }
-    } else if (response?.type === 'error') {
-      onDone();
-      onError('auth.googleError');
-    }
-  }, [response]);
-
-  return null;
-}
 
 const RUN_IMAGES = [
   require('../../../../assets/run1.png'),
@@ -70,21 +30,6 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  const googleTrigger = React.useRef<(() => void) | null>(null);
-
-  const handleGooglePress = () => {
-    if (IS_EXPO_GO) {
-      Alert.alert(
-        'Google Sign-In',
-        'Not available in Expo Go. Use email/password to test, or run an EAS build.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-    googleTrigger.current?.();
-  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -115,14 +60,6 @@ export default function AuthScreen() {
 
   return (
     <ImageBackground source={RUN_IMAGES[imageIndex]} style={styles.bg} resizeMode="cover">
-      {!IS_EXPO_GO && (
-        <GoogleAuthHandler
-          triggerRef={googleTrigger}
-          onStart={() => setGoogleLoading(true)}
-          onDone={() => setGoogleLoading(false)}
-          onError={(msg) => { setError(friendlyError(msg, t)); }}
-        />
-      )}
       <View style={styles.overlay}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView
@@ -151,22 +88,6 @@ export default function AuthScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.secondaryBtn} onPress={() => { reset(); setView('login'); }}>
                   <Text style={styles.secondaryBtnText}>{t('auth.login')}</Text>
-                </TouchableOpacity>
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>{t('common.or')}</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-                <TouchableOpacity
-                  style={[styles.googleBtn, googleLoading && styles.disabledBtn]}
-                  disabled={googleLoading}
-                  onPress={handleGooglePress}
-                >
-                  {googleLoading
-                    ? <ActivityIndicator color={colors.text} size="small" />
-                    : <Ionicons name="logo-google" size={20} color={colors.text} />
-                  }
-                  <Text style={styles.googleBtnText}>{t('auth.loginWithGoogle')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -235,8 +156,6 @@ function AuthInput({ icon, placeholder, value, onChangeText, secureTextEntry, ke
 }
 
 function friendlyError(msg: string, t: (key: string) => string): string {
-  if (msg === 'auth.noToken') return t('auth.noToken');
-  if (msg === 'auth.googleError') return t('auth.googleError');
   if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential'))
     return t('auth.errorInvalidCredential');
   if (msg.includes('email-already-in-use')) return t('auth.errorEmailInUse');
@@ -313,22 +232,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   secondaryBtnText: { color: colors.text, fontSize: fontSizes.md, fontWeight: '600' },
-  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.xs },
-  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
-  dividerText: { color: colors.textMuted, marginHorizontal: spacing.sm, fontSize: fontSizes.sm },
-  googleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.inputBg,
-    borderRadius: radii.full,
-    paddingVertical: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sm,
-  },
-  googleBtnText: { color: colors.text, fontSize: fontSizes.md, fontWeight: '600' },
-  disabledBtn: { opacity: 0.4 },
   error: { color: colors.error, fontSize: fontSizes.sm, textAlign: 'center' },
   backText: { color: colors.textSecondary, fontSize: fontSizes.sm, textAlign: 'center', marginTop: spacing.sm },
 });
