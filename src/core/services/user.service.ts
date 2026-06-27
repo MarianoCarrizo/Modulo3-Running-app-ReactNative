@@ -9,7 +9,7 @@ export const getUser = async (uid: string): Promise<User | null> => {
 };
 
 export const createUser = async (uid: string, data: Partial<Omit<User, 'uid'>>) =>
-  setDoc(doc(db, 'users', uid), { ...data, onboardingCompleted: false }, { merge: true });
+  setDoc(doc(db, 'users', uid), data, { merge: true });
 
 export const updateUser = async (uid: string, data: Partial<Omit<User, 'uid'>>) =>
   updateDoc(doc(db, 'users', uid), data as Record<string, unknown>);
