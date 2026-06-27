@@ -71,6 +71,7 @@ export default function LeaderboardScreen() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('totalDistance');
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [queryError, setQueryError] = useState<string | null>(null);
 
   const FILTERS: { key: FilterKey; label: string }[] = [
     { key: 'totalDistance', label: t('leaderboard.distance') },
@@ -82,6 +83,7 @@ export default function LeaderboardScreen() {
 
   const load = useCallback(async (filter: FilterKey) => {
     setLoading(true);
+    setQueryError(null);
     try {
       const direction = filter === 'bestPace' ? 'asc' : 'desc';
       const snap = await getDocs(
@@ -104,8 +106,9 @@ export default function LeaderboardScreen() {
           bestPace:      d.data().bestPace       ?? 0,
         }))
       );
-    } catch {
+    } catch (e) {
       setUsers([]);
+      setQueryError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
@@ -131,6 +134,10 @@ export default function LeaderboardScreen() {
 
       {loading ? (
         <CenteredLoader />
+      ) : queryError ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyText}>Error: {queryError}</Text>
+        </View>
       ) : users.length === 0 ? (
         <View style={styles.center}>
           <Text style={styles.emptyText}>{t('leaderboard.noData')}</Text>
