@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, ActivityIndicator, Image, Alert,
+  TextInput, ActivityIndicator, Alert,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import { useAuthStore } from '../../../core/store/auth.store';
 import { updateUser } from '../../../core/services/user.service';
 import { uploadProfileImage } from '../../../core/services/cloudinary.service';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+import { UserAvatar, CenteredLoader } from '../../../core/components';
 
 export default function ProfileScreen() {
   const { user, setUser } = useAuthStore();
@@ -83,13 +84,7 @@ export default function ProfileScreen() {
         onPress={editing ? handlePickPhoto : undefined}
         activeOpacity={editing ? 0.7 : 1}
       >
-        {user.photoUrl ? (
-          <Image source={{ uri: user.photoUrl }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}>
-            <Ionicons name="person" size={48} color={colors.textMuted} />
-          </View>
-        )}
+        <UserAvatar uri={user.photoUrl} />
         {editing && (
           <View style={styles.cameraOverlay}>
             {uploadingPhoto
@@ -105,7 +100,7 @@ export default function ProfileScreen() {
           <Text style={styles.nameText}>{user.name || 'Runner'}</Text>
 
           <View style={styles.pointsRow}>
-            <Ionicons name="trophy" size={18} color="#FFD700" />
+            <Ionicons name="trophy" size={18} color={colors.medal.gold} />
             <Text style={styles.pointsText}>{user.points ?? 0} PUNTOS</Text>
           </View>
 
@@ -193,27 +188,17 @@ const styles = StyleSheet.create({
   content: { alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.xxl },
 
   avatarWrap: { marginBottom: spacing.lg },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  avatarFallback: {
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   cameraOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 60,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderRadius: radii.avatar,
+    backgroundColor: colors.modalScrim.light,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   nameText:   { color: colors.text, fontSize: fontSizes.xl, fontWeight: '900', marginBottom: spacing.sm },
   pointsRow:  { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  pointsText: { color: '#FFD700', fontSize: fontSizes.md, fontWeight: '900' },
+  pointsText: { color: colors.medal.gold, fontSize: fontSizes.md, fontWeight: '900' },
   bioText:    { color: colors.textSecondary, fontSize: fontSizes.md, textAlign: 'center', marginBottom: spacing.xl },
 
   statsCard: {

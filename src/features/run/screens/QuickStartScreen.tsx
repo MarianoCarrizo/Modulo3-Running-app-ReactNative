@@ -8,11 +8,27 @@ import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
-import { MainDrawerParamList } from '../../../navigation';
 
-type Nav = DrawerNavigationProp<MainDrawerParamList, 'Carrera'>;
+const LEAFLET_PRIMARY_COLOR = colors.primary;
+const LEAFLET_MARKER_RING = `rgba(232,51,109,0.25)`;
+
+const MAP_ZOOM     = 18;
+const DOT_CORE_PX  = 14;
+const DOT_OUTER_PX = 30;
+const DOT_ANCHOR   = DOT_OUTER_PX / 2;
+const DOT_OFFSET   = (DOT_OUTER_PX - DOT_CORE_PX) / 2;
+import { MainDrawerParamList, RootStackParamList } from '../../../navigation';
+import { useRunStore } from '../../../core/store/run.store';
+import { unitLabel, displayToMeters } from '../../../core/utils/unitConverter';
+
+type Nav = CompositeNavigationProp<
+  DrawerNavigationProp<MainDrawerParamList, 'Carrera'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 const MapWebView = React.memo(
   React.forwardRef<WebView, { html: string }>(function MapWebViewInner({ html }, ref) {
@@ -37,12 +53,8 @@ const MapWebView = React.memo(
   })
 );
 
-interface RunConfig {
-  unitSystem: 'metric' | 'imperial';
-  voiceAlerts: boolean;
-  alertFrequencyKm: number;
-  countdown: number;
-}
+import { useTranslation } from 'react-i18next';
+import { RunConfig } from '../../../core/types';
 
 const COUNTDOWN_OPTIONS = [0, 3, 5, 10];
 
@@ -58,6 +70,35 @@ function buildMapHtml(lat: number, lng: number): string {
     html, body, #map { width: 100%; height: 100%; }
     html, body { overflow: hidden; overscroll-behavior: none; touch-action: none; }
     .leaflet-control-container { display: none !important; }
+
+    .dot-wrapper {
+      position: relative;
+      width: ${DOT_OUTER_PX}px;
+      height: ${DOT_OUTER_PX}px;
+    }
+    .dot-pulse {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: ${LEAFLET_MARKER_RING};
+      animation: pulse 2s ease-out infinite;
+    }
+    .dot-core {
+      position: absolute;
+      width: ${DOT_CORE_PX}px;
+      height: ${DOT_CORE_PX}px;
+      top: ${DOT_OFFSET}px;
+      left: ${DOT_OFFSET}px;
+      background: ${LEAFLET_PRIMARY_COLOR};
+      border-radius: 50%;
+      border: 2.5px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    @keyframes pulse {
+      0%   { transform: scale(0.5); opacity: 0.9; }
+      70%  { transform: scale(3);   opacity: 0;   }
+      100% { transform: scale(3);   opacity: 0;   }
+    }
   </style>
 </head>
 <body>
@@ -72,25 +113,27 @@ function buildMapHtml(lat: number, lng: number): string {
       boxZoom: false,
       keyboard: false,
       tap: false
-    }).setView([${lat}, ${lng}], 17);
+    }).setView([${lat}, ${lng}], ${MAP_ZOOM});
+
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19
     }).addTo(map);
 
-    var dotHtml = '<div style="width:14px;height:14px;background:#E8336D;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 7px rgba(232,51,109,0.2);"></div>';
-    var dotIcon = L.divIcon({ html: dotHtml, iconSize: [14,14], iconAnchor: [7,7], className: '' });
+    var dotHtml = '<div class="dot-wrapper"><div class="dot-pulse"></div><div class="dot-core"></div></div>';
+    var dotIcon = L.divIcon({
+      html: dotHtml,
+      iconSize: [${DOT_OUTER_PX}, ${DOT_OUTER_PX}],
+      iconAnchor: [${DOT_ANCHOR}, ${DOT_ANCHOR}],
+      className: ''
+    });
     var marker = L.marker([${lat}, ${lng}], { icon: dotIcon }).addTo(map);
 
     function handleMsg(data) {
       try {
         var msg = JSON.parse(data);
-        if (msg.type === 'location') {
-          marker.setLatLng([msg.lat, msg.lng]);
-        }
-        if (msg.type === 'center') {
-          map.setView([msg.lat, msg.lng], 17, { animate: true });
-        }
+        if (msg.type === 'location') { marker.setLatLng([msg.lat, msg.lng]); }
+        if (msg.type === 'center')   { map.setView([msg.lat, msg.lng], ${MAP_ZOOM}, { animate: true }); }
       } catch(e) {}
     }
 
@@ -102,20 +145,37 @@ function buildMapHtml(lat: number, lng: number): string {
 }
 
 export default function QuickStartScreen() {
-  useNavigation<Nav>();
+  const navigation = useNavigation<Nav>();
+  const storeSetConfig = useRunStore((s) => s.setConfig);
+  const setGoalDistance = useRunStore((s) => s.setGoalDistance);
+  const startCountdown = useRunStore((s) => s.startCountdown);
+  const storedConfig = useRunStore((s) => s.config);
 
   const webViewRef = useRef<WebView>(null);
   const mapHtmlRef = useRef<string | null>(null);
 
+  const { t } = useTranslation();
   const [gpsReady, setGpsReady] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [configVisible, setConfigVisible] = useState(false);
-  const [config, setConfig] = useState<RunConfig>({
-    unitSystem: 'metric',
-    voiceAlerts: true,
-    alertFrequencyKm: 1,
-    countdown: 3,
-  });
+  const [goalVisible, setGoalVisible] = useState(false);
+  const [goalDisplay, setGoalDisplay] = useState(0);
+  const [config, setConfig] = useState<RunConfig>(storedConfig);
+
+  useEffect(() => {
+    setConfig(storedConfig);
+  }, [storedConfig]);
+
+  const handleStart = async () => {
+    await storeSetConfig(config);
+    setGoalDistance(displayToMeters(goalDisplay, config.unitSystem));
+    startCountdown();
+    navigation.navigate('Countdown', {
+      countdown: config.countdown,
+      config,
+      goalDistance: displayToMeters(goalDisplay, config.unitSystem),
+    });
+  };
 
   useEffect(() => {
     let sub: Location.LocationSubscription | null = null;
@@ -157,52 +217,112 @@ export default function QuickStartScreen() {
       {!gpsReady && (
         <View style={styles.gpsLoading}>
           <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: spacing.lg }} />
-          <Text style={styles.gpsTitle}>Buscando señal GPS...</Text>
-          <Text style={styles.gpsSub}>Asegúrate de estar en un lugar despejado</Text>
+          <Text style={styles.gpsTitle}>{t('run.gpsSearching')}</Text>
+          <Text style={styles.gpsSub}>{t('run.gpsSearchingSub')}</Text>
         </View>
       )}
 
       {gpsReady && mapHtmlRef.current && (
         <>
           <MapWebView ref={webViewRef} html={mapHtmlRef.current} />
-          <TouchableOpacity style={styles.startBtn}>
-            <Text style={styles.startBtnText}>COMENZAR</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.gearBtn} onPress={() => setConfigVisible(true)}>
-            <Ionicons name="settings" size={26} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.objectiveBtn}>
-            <Text style={styles.objectiveBtnText}>Establece un objetivo</Text>
-          </TouchableOpacity>
+
+          {goalDisplay > 0 && (
+            <View style={styles.goalChip}>
+              <Ionicons name="flag" size={14} color={colors.text} />
+              <Text style={styles.goalChipText}>
+                {t('run.goal', { value: goalDisplay.toFixed(2), unit: unitLabel(config.unitSystem) })}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setGoalDisplay(0)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close" size={16} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.bottomControls}>
+            <View style={styles.mainBtnRow}>
+              <TouchableOpacity style={styles.gearBtn} onPress={() => setConfigVisible(true)}>
+                <Ionicons name="settings" size={26} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.startBtn} onPress={handleStart}>
+                <Text style={styles.startBtnText}>{t('run.begin')}</Text>
+              </TouchableOpacity>
+              <View style={styles.gearPlaceholder} />
+            </View>
+            <TouchableOpacity style={styles.objectiveBtn} onPress={() => setGoalVisible(true)}>
+              <Text style={styles.objectiveBtnText}>{t('run.setGoal')}</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
+
+      <Modal visible={goalVisible} transparent animationType="fade" statusBarTranslucent>
+        <Pressable style={styles.modalOverlay} onPress={() => setGoalVisible(false)}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <Text style={styles.modalTitle}>{t('run.goalDistance')}</Text>
+            <Text style={styles.sectionLabel}>
+              {goalDisplay === 0
+                ? t('run.noGoal')
+                : `${goalDisplay.toFixed(1)} ${unitLabel(config.unitSystem)}`}
+            </Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={config.unitSystem === 'imperial' ? 26.2 : 42.2}
+              step={0.5}
+              value={goalDisplay}
+              onValueChange={setGoalDisplay}
+              minimumTrackTintColor={colors.primary}
+              maximumTrackTintColor={colors.border}
+              thumbTintColor={colors.primary}
+            />
+            <View style={styles.goalBtnRow}>
+              <TouchableOpacity
+                style={styles.goalClearBtn}
+                onPress={() => { setGoalDisplay(0); setGoalVisible(false); }}
+              >
+                <Text style={styles.goalClearBtnText}>{t('run.noGoal')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setGoalVisible(false)}>
+                <Text style={styles.closeBtnText}>{t('common.done')}</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal visible={configVisible} transparent animationType="fade" statusBarTranslucent>
         <Pressable style={styles.modalOverlay} onPress={() => setConfigVisible(false)}>
           <Pressable style={styles.modalCard} onPress={() => {}}>
 
-            <Text style={styles.modalTitle}>Configuración</Text>
+            <Text style={styles.modalTitle}>{t('settings.title')}</Text>
 
-            <Text style={styles.sectionLabel}>Sistema de unidades</Text>
+            <Text style={styles.sectionLabel}>{t('settings.units')}</Text>
             <View style={styles.radioRow}>
               {(['metric', 'imperial'] as const).map((unit) => (
                 <TouchableOpacity
                   key={unit}
                   style={styles.radioOption}
-                  onPress={() => setConfig((c) => ({ ...c, unitSystem: unit }))}
+                  onPress={() => {
+                    const next = { ...config, unitSystem: unit };
+                    setConfig(next);
+                    storeSetConfig(next);
+                  }}
                 >
                   <View style={[styles.radioCircle, config.unitSystem === unit && styles.radioCircleActive]}>
                     {config.unitSystem === unit && <View style={styles.radioDot} />}
                   </View>
                   <Text style={styles.radioLabel}>
-                    {unit === 'metric' ? 'Métrico (km)' : 'Imperial (mi)'}
+                    {unit === 'metric' ? t('settings.metric') : t('settings.imperial')}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             <View style={styles.toggleRow}>
-              <Text style={styles.sectionLabel}>Alertas de voz</Text>
+              <Text style={styles.sectionLabel}>{t('settings.voiceAlerts')}</Text>
               <Switch
                 value={config.voiceAlerts}
                 onValueChange={(v) => setConfig((c) => ({ ...c, voiceAlerts: v }))}
@@ -214,7 +334,7 @@ export default function QuickStartScreen() {
             {config.voiceAlerts && (
               <View style={styles.freqSection}>
                 <Text style={styles.freqLabel}>
-                  Frecuencia: cada {config.alertFrequencyKm.toFixed(1)} km
+                  {t('settings.frequency', { value: config.alertFrequencyKm.toFixed(1), unit: config.unitSystem === 'imperial' ? 'mi' : 'km' })}
                 </Text>
                 <Slider
                   style={styles.slider}
@@ -230,7 +350,7 @@ export default function QuickStartScreen() {
               </View>
             )}
 
-            <Text style={styles.sectionLabel}>Cuenta regresiva</Text>
+            <Text style={styles.sectionLabel}>{t('settings.countdown')}</Text>
             <View style={styles.chipRow}>
               {COUNTDOWN_OPTIONS.map((s) => (
                 <TouchableOpacity
@@ -246,7 +366,7 @@ export default function QuickStartScreen() {
             </View>
 
             <TouchableOpacity style={styles.closeBtn} onPress={() => setConfigVisible(false)}>
-              <Text style={styles.closeBtnText}>Cerrar</Text>
+              <Text style={styles.closeBtnText}>{t('common.close')}</Text>
             </TouchableOpacity>
 
           </Pressable>
@@ -278,13 +398,47 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
 
-  startBtn: {
+  goalChip: {
     position: 'absolute',
-    bottom: 120,
+    top: 16,
     alignSelf: 'center',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radii.full,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    gap: spacing.xs,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  goalChipText: {
+    color: colors.text,
+    fontSize: fontSizes.sm,
+    fontWeight: '600',
+  },
+  bottomControls: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+  mainBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 28,
+    marginBottom: spacing.md,
+  },
+  startBtn: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -301,10 +455,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
   },
   gearBtn: {
-    position: 'absolute',
-    bottom: 150,
-    alignSelf: 'center',
-    transform: [{ translateX: -100 }],
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -313,11 +463,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
   },
+  gearPlaceholder: {
+    width: 60,
+    height: 60,
+  },
   objectiveBtn: {
-    position: 'absolute',
-    bottom: 40,
-    left: spacing.lg,
-    right: spacing.lg,
     backgroundColor: colors.background,
     borderRadius: radii.full,
     paddingVertical: spacing.md,
@@ -332,7 +482,7 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: colors.modalScrim.scrim,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
@@ -395,4 +545,18 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   closeBtnText: { color: colors.text, fontWeight: 'bold', fontSize: fontSizes.md },
+  goalBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.md,
+  },
+  goalClearBtn: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+  },
+  goalClearBtnText: {
+    color: colors.textSecondary,
+    fontSize: fontSizes.sm,
+  },
 });

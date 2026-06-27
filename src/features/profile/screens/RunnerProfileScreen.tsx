@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Image, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView,
 } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,13 +8,16 @@ import { getUser } from '../../../core/services/user.service';
 import { User } from '../../../core/types';
 import { RootStackParamList } from '../../../navigation';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
+import { UserAvatar, CenteredLoader } from '../../../core/components';
 
 type Route = RouteProp<RootStackParamList, 'RunnerProfile'>;
 
 function formatDistance(km: number) { return km.toFixed(1); }
-function formatPace(s: number) {
-  const mins = Math.floor(s / 60);
-  const secs = Math.floor(s % 60);
+function formatPace(paceMinKm: number) {
+  if (!isFinite(paceMinKm) || paceMinKm <= 0) return '--:--';
+  const totalSeconds = Math.round(paceMinKm * 60);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
@@ -53,11 +56,7 @@ export default function RunnerProfileScreen() {
   }, [params.uid]);
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
+    return <CenteredLoader />;
   }
 
   if (error || !runner) {
@@ -71,13 +70,7 @@ export default function RunnerProfileScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.avatarWrap}>
-        {runner.photoUrl ? (
-          <Image source={{ uri: runner.photoUrl }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}>
-            <Ionicons name="person" size={48} color={colors.textMuted} />
-          </View>
-        )}
+        <UserAvatar uri={runner.photoUrl} />
       </View>
 
       <Text style={styles.nameText}>{runner.name || 'Runner'}</Text>
@@ -91,7 +84,7 @@ export default function RunnerProfileScreen() {
       <View style={styles.grid}>
         <StatCard
           icon="map-outline"
-          value={formatDistance(runner.totalDistance)}
+          value={formatDistance(runner.totalDistance ?? 0)}
           unit="km"
           label="Distancia"
         />
@@ -103,13 +96,13 @@ export default function RunnerProfileScreen() {
         />
         <StatCard
           icon="flame-outline"
-          value={runner.totalCalories.toString()}
+          value={(runner.totalCalories ?? 0).toString()}
           unit="kcal"
           label="Calorías"
         />
         <StatCard
           icon="walk-outline"
-          value={runner.totalSteps.toLocaleString()}
+          value={(runner.totalSteps ?? 0).toLocaleString()}
           unit=""
           label="Pasos"
         />
@@ -134,12 +127,6 @@ const styles = StyleSheet.create({
   errorText: { color: colors.textMuted, fontSize: fontSizes.md },
 
   avatarWrap: { marginBottom: spacing.lg },
-  avatar: { width: 120, height: 120, borderRadius: 60 },
-  avatarFallback: {
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 
   nameText: { color: colors.text, fontSize: fontSizes.xl, fontWeight: '900', marginBottom: spacing.sm },
   bioText:  { color: colors.textSecondary, fontSize: fontSizes.md, textAlign: 'center', marginBottom: spacing.xl },

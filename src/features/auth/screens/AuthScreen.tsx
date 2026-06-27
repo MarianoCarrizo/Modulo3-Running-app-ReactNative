@@ -9,6 +9,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { loginWithEmail, registerWithEmail, loginWithGoogleCredential } from '../../../core/services/auth.service';
 import { colors, spacing, fontSizes, radii } from '../../../core/theme';
 
@@ -40,11 +41,11 @@ function GoogleAuthHandler({ triggerRef, onStart, onDone, onError }: {
           .catch((e: unknown) => { onDone(); onError(e instanceof Error ? e.message : 'Google auth failed.'); });
       } else {
         onDone();
-        onError('No se pudo obtener el token de Google.');
+        onError('auth.noToken');
       }
     } else if (response?.type === 'error') {
       onDone();
-      onError('Error al autenticar con Google. Intentá de nuevo.');
+      onError('auth.googleError');
     }
   }, [response]);
 
@@ -57,12 +58,11 @@ const RUN_IMAGES = [
   require('../../../../assets/run3.png'),
 ];
 
-const QUOTE = '"Tus piernas no están cansadas,\ntu mente te miente."';
-
 type AuthView = 'landing' | 'login' | 'register';
 
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [view, setView] = useState<AuthView>('landing');
   const [imageIndex, setImageIndex] = useState(0);
   const [email, setEmail] = useState('');
@@ -96,20 +96,20 @@ export default function AuthScreen() {
   const reset = () => { setError(''); setEmail(''); setPassword(''); setConfirmPassword(''); };
 
   const handleLogin = async () => {
-    if (!email || !password) { setError('Completá todos los campos.'); return; }
+    if (!email || !password) { setError(t('auth.fillAllFields')); return; }
     setError(''); setLoading(true);
     try { await loginWithEmail(email, password); }
-    catch (e: unknown) { setError(e instanceof Error ? friendlyError(e.message) : 'Error al iniciar sesión.'); }
+    catch (e: unknown) { setError(e instanceof Error ? friendlyError(e.message, t) : t('auth.errorGeneric')); }
     finally { setLoading(false); }
   };
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) { setError('Completá todos los campos.'); return; }
-    if (password !== confirmPassword) { setError('Las contraseñas no coinciden.'); return; }
-    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (!email || !password || !confirmPassword) { setError(t('auth.fillAllFields')); return; }
+    if (password !== confirmPassword) { setError(t('auth.passwordMismatch')); return; }
+    if (password.length < 6) { setError(t('auth.passwordTooShort')); return; }
     setError(''); setLoading(true);
     try { await registerWithEmail(email, password); }
-    catch (e: unknown) { setError(e instanceof Error ? friendlyError(e.message) : 'Error al registrarse.'); }
+    catch (e: unknown) { setError(e instanceof Error ? friendlyError(e.message, t) : t('auth.errorGeneric')); }
     finally { setLoading(false); }
   };
 
@@ -120,7 +120,7 @@ export default function AuthScreen() {
           triggerRef={googleTrigger}
           onStart={() => setGoogleLoading(true)}
           onDone={() => setGoogleLoading(false)}
-          onError={(msg) => { setError(friendlyError(msg)); }}
+          onError={(msg) => { setError(friendlyError(msg, t)); }}
         />
       )}
       <View style={styles.overlay}>
@@ -138,7 +138,7 @@ export default function AuthScreen() {
 
             {/* Quote */}
             <View style={styles.quoteBox}>
-              <Text style={styles.quoteText}>{QUOTE}</Text>
+              <Text style={styles.quoteText}>{t('auth.quote')}</Text>
             </View>
 
             <View style={styles.spacer} />
@@ -147,14 +147,14 @@ export default function AuthScreen() {
             {view === 'landing' && (
               <View style={styles.actions}>
                 <TouchableOpacity style={styles.primaryBtn} onPress={() => { reset(); setView('register'); }}>
-                  <Text style={styles.primaryBtnText}>Unirse al club</Text>
+                  <Text style={styles.primaryBtnText}>{t('auth.joinClub')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.secondaryBtn} onPress={() => { reset(); setView('login'); }}>
-                  <Text style={styles.secondaryBtnText}>Iniciar sesión</Text>
+                  <Text style={styles.secondaryBtnText}>{t('auth.login')}</Text>
                 </TouchableOpacity>
                 <View style={styles.dividerRow}>
                   <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>o</Text>
+                  <Text style={styles.dividerText}>{t('common.or')}</Text>
                   <View style={styles.dividerLine} />
                 </View>
                 <TouchableOpacity
@@ -166,7 +166,7 @@ export default function AuthScreen() {
                     ? <ActivityIndicator color={colors.text} size="small" />
                     : <Ionicons name="logo-google" size={20} color={colors.text} />
                   }
-                  <Text style={styles.googleBtnText}>Continuar con Google</Text>
+                  <Text style={styles.googleBtnText}>{t('auth.loginWithGoogle')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -174,14 +174,14 @@ export default function AuthScreen() {
             {/* LOGIN */}
             {view === 'login' && (
               <View style={styles.actions}>
-                <AuthInput icon="mail-outline" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-                <AuthInput icon="lock-closed-outline" placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry />
+                <AuthInput icon="mail-outline" placeholder={t('auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" />
+                <AuthInput icon="lock-closed-outline" placeholder={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
                 {error !== '' && <Text style={styles.error}>{error}</Text>}
                 <TouchableOpacity style={styles.primaryBtn} onPress={handleLogin} disabled={loading}>
-                  {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.primaryBtnText}>Entrar al club</Text>}
+                  {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.primaryBtnText}>{t('auth.enterClub')}</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { reset(); setView('landing'); }}>
-                  <Text style={styles.backText}>Volver atrás</Text>
+                  <Text style={styles.backText}>{t('auth.goBack')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -189,15 +189,15 @@ export default function AuthScreen() {
             {/* REGISTER */}
             {view === 'register' && (
               <View style={styles.actions}>
-                <AuthInput icon="mail-outline" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
-                <AuthInput icon="lock-closed-outline" placeholder="Contraseña" value={password} onChangeText={setPassword} secureTextEntry />
-                <AuthInput icon="lock-closed-outline" placeholder="Confirmar contraseña" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
+                <AuthInput icon="mail-outline" placeholder={t('auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" />
+                <AuthInput icon="lock-closed-outline" placeholder={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
+                <AuthInput icon="lock-closed-outline" placeholder={t('auth.confirmPassword')} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
                 {error !== '' && <Text style={styles.error}>{error}</Text>}
                 <TouchableOpacity style={styles.primaryBtn} onPress={handleRegister} disabled={loading}>
-                  {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.primaryBtnText}>Registrarme</Text>}
+                  {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.primaryBtnText}>{t('auth.registerMe')}</Text>}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { reset(); setView('landing'); }}>
-                  <Text style={styles.backText}>Volver atrás</Text>
+                  <Text style={styles.backText}>{t('auth.goBack')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -234,12 +234,14 @@ function AuthInput({ icon, placeholder, value, onChangeText, secureTextEntry, ke
   );
 }
 
-function friendlyError(msg: string): string {
+function friendlyError(msg: string, t: (key: string) => string): string {
+  if (msg === 'auth.noToken') return t('auth.noToken');
+  if (msg === 'auth.googleError') return t('auth.googleError');
   if (msg.includes('user-not-found') || msg.includes('wrong-password') || msg.includes('invalid-credential'))
-    return 'Email o contraseña incorrectos.';
-  if (msg.includes('email-already-in-use')) return 'Este email ya está registrado.';
-  if (msg.includes('invalid-email')) return 'El email no es válido.';
-  return 'Ocurrió un error. Intentá de nuevo.';
+    return t('auth.errorInvalidCredential');
+  if (msg.includes('email-already-in-use')) return t('auth.errorEmailInUse');
+  if (msg.includes('invalid-email')) return t('auth.errorInvalidEmail');
+  return t('auth.errorGeneric');
 }
 
 const inputStyles = StyleSheet.create({

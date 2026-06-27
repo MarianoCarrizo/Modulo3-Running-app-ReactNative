@@ -7,38 +7,37 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0D1B3E"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.aplicacionesmoviles.alamutt",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Alamutt Running needs your location to track your runs.",
         "NSMotionUsageDescription": "Alamutt Running uses motion data to count your steps.",
-        "NSSpeechRecognitionUsageDescription": "Alamutt Running uses speech for voice alerts."
+        "NSSpeechRecognitionUsageDescription": "Alamutt Running uses speech for voice alerts.",
+        "UIBackgroundModes": [
+          "location"
+        ],
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Needed to track your run in background"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E91E63",
+        "backgroundColor": "#0D1B3E",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.aplicacionesmoviles.alamutt",
       "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "ACTIVITY_RECOGNITION"
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
       ],
-      "predictiveBackGestureEnabled": false,
-      "navigationBar": {
-        "backgroundColor": "#0D1B3E",
-        "barStyle": "light-content"
-      }
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -47,11 +46,36 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Alamutt Running needs your location to track your runs."
+          "locationWhenInUsePermission": "Alamutt Running needs your location to track your runs.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#E8336D"
+        }
+      ],
+      "expo-task-manager",
       "expo-image-picker",
-      "expo-web-browser"
-    ]
+      "expo-web-browser",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0D1B3E"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d17f8436-aa19-4943-87f3-db4b4b40bab0"
+      }
+    },
+    "owner": "duhonha"
   }
 }

@@ -1,0 +1,127 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "back": "Voltar",
+    "logout": "Sair",
+    "close": "Fechar",
+    "done": "Pronto",
+    "or": "ou"
+  },
+  "auth": {
+    "login": "Entrar",
+    "loginWithGoogle": "Continuar com Google",
+    "email": "E-mail",
+    "password": "Senha",
+    "confirmPassword": "Confirmar senha",
+    "noAccount": "Não tem uma conta?",
+    "register": "Cadastrar-se",
+    "joinClub": "Entrar no clube",
+    "enterClub": "Acessar o clube",
+    "registerMe": "Criar conta",
+    "goBack": "Voltar",
+    "quote": "\"Suas pernas não estão cansadas,\nsua mente está mentindo para você.\"",
+    "fillAllFields": "Preencha todos os campos.",
+    "passwordMismatch": "As senhas não coincidem.",
+    "passwordTooShort": "A senha deve ter pelo menos 6 caracteres.",
+    "errorInvalidCredential": "E-mail ou senha incorretos.",
+    "errorEmailInUse": "Este e-mail já está cadastrado.",
+    "errorInvalidEmail": "O e-mail não é válido.",
+    "errorGeneric": "Ocorreu um erro. Tente novamente.",
+    "noToken": "Não foi possível obter o token do Google.",
+    "googleError": "Erro ao autenticar com o Google. Tente novamente."
+  },
+  "run": {
+    "begin": "COMEÇAR",
+    "start": "Iniciar corrida",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "finish": "Finalizar",
+    "go": "JÁ!",
+    "distance": "Distância",
+    "pace": "Ritmo",
+    "calories": "Calorias",
+    "steps": "Passos",
+    "time": "Tempo",
+    "goalReached": "Objetivo alcançado! Excelente trabalho.",
+    "keepScreenOpen": "Mantenha esta tela aberta durante a corrida",
+    "gpsLost": "Sinal GPS perdido",
+    "paused": "Pausado",
+    "gpsSearching": "Buscando sinal GPS...",
+    "gpsSearchingSub": "Certifique-se de estar em um local aberto",
+    "setGoal": "Definir objetivo",
+    "goal": "Objetivo: {{value}} {{unit}}",
+    "goalDistance": "Distância objetivo",
+    "noGoal": "Sem objetivo"
+  },
+  "runDetail": {
+    "title": "Detalhe da Corrida",
+    "notFound": "Corrida não encontrada."
+  },
+  "history": {
+    "title": "Histórico de corridas",
+    "noRuns": "Nenhuma corrida registrada ainda.",
+    "noRunsSub": "Complete sua primeira corrida para vê-la aqui!"
+  },
+  "settings": {
+    "title": "Configurações",
+    "general": "Geral",
+    "language": "Idioma / Language",
+    "training": "Treinamento",
+    "units": "Sistema de unidades",
+    "metric": "Métrico (km)",
+    "imperial": "Imperial (mi)",
+    "voiceAlerts": "Alertas de voz",
+    "frequency": "Frequência: a cada {{value}} {{unit}}",
+    "countdown": "Contagem regressiva",
+    "goalDistance": "Distância objetivo"
+  },
+  "challenges": {
+    "points": "pontos",
+    "totalPoints": "Pontos totais",
+    "weeklyReset": "Os desafios são reiniciados toda semana · {{week}}",
+    "active": "Desafios em andamento",
+    "available": "Novos desafios",
+    "completed": "Concluídos",
+    "reward": "Recompensa: {{points}} pontos",
+    "join": "Desafiar",
+    "week": "Semana",
+    "progressText": "{{current}} km de {{target}} km",
+    "completedLabel": "{{km}} km Runner — {{year}} Semana {{week}}",
+    "errorJoin": "Não foi possível entrar no desafio. Tente novamente.",
+    "errorLeave": "Não foi possível sair do desafio. Tente novamente."
+  },
+  "drawer": {
+    "greeting": "Olá, {{name}}",
+    "run": "Corrida",
+    "activity": "Atividade",
+    "stats": "Estatísticas",
+    "leaderboard": "Ranking",
+    "challenges": "Desafios",
+    "settings": "Configurações"
+  },
+  "recovery": {
+    "title": "Corrida recuperada",
+    "subtitle": "Encontramos uma corrida que não foi salva corretamente.",
+    "discard": "Descartar"
+  },
+  "leaderboard": {
+    "distance": "Distância",
+    "calories": "Calorias",
+    "steps": "Passos",
+    "points": "Pontos",
+    "pace": "Ritmo",
+    "noData": "Sem dados ainda",
+    "unitSteps": "PASSOS",
+    "unitPts": "PTS"
+  },
+  "stats": {
+    "points": "Pontos",
+    "totalDistance": "Distância total",
+    "runs": "Corridas",
+    "calories": "Calorias",
+    "totalSteps": "Passos totais"
+  }
+}

@@ -3,7 +3,6 @@ import { db } from '../config/firebase';
 
 export const CHALLENGE_DISTANCES_KM = [5.0, 10.0, 21.0, 42.0];
 
-// Matches Java Calendar.WEEK_OF_YEAR with US locale (weeks start Sunday, week 1 contains Jan 1)
 export function getCurrentWeekId(): string {
   const now = new Date();
   const year = now.getFullYear();
@@ -37,7 +36,6 @@ export async function fetchChallengeData(uid: string): Promise<ChallengeState> {
   const points = (data.points as number) ?? 0;
 
   if (storedWeekId !== currentWeekId) {
-    // Week rolled over — reset Firestore immediately so stale challenges don't linger
     await updateDoc(ref, { activeChallenges: {}, challengeWeekId: currentWeekId });
     return { activeChallenges: {}, challengeWeekId: currentWeekId, completedChallenges, points };
   }
@@ -62,7 +60,6 @@ export async function subscribeToChallenge(uid: string, distance: number): Promi
     const storedWeekId = (data.challengeWeekId as string) ?? '';
     const existing = (data.activeChallenges as Record<string, number>) ?? {};
 
-    // Reset on week rollover
     const activeChallenges = storedWeekId !== currentWeekId ? {} : { ...existing };
     const key = distance.toString();
 
@@ -89,7 +86,6 @@ export async function unsubscribeFromChallenge(uid: string, distance: number): P
   });
 }
 
-// Called after a run completes. Returns list of newly completed challenge distances.
 export async function updateUserStats(
   uid: string,
   distanceKm: number,
@@ -112,10 +108,8 @@ export async function updateUserStats(
     let points = (data.points as number) ?? 0;
     const bestPace = (data.bestPace as number) ?? 0;
 
-    // Reset active challenges when week changes
     const activeChallenges = storedWeekId !== currentWeekId ? {} : { ...existing };
 
-    // Update progress for each active challenge
     for (const [key, progress] of Object.entries(activeChallenges)) {
       const target = parseFloat(key);
       const newProgress = progress + distanceKm;
