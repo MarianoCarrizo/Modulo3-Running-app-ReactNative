@@ -33,7 +33,6 @@ export function useAuthListener() {
           activeChallenges: {},
           challengeWeekId: '',
           completedChallenges: [],
-          onboardingCompleted: false,
         });
         user = await getUser(firebaseUser.uid);
       }

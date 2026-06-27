@@ -22,9 +22,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E91E63",
+        "backgroundColor": "#0D1B3E",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.aplicacionesmoviles.alamutt",
